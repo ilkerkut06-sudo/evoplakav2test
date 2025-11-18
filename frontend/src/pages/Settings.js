@@ -77,7 +77,7 @@ const Settings = () => {
                 <p className="text-xs text-slate-500">Hatalı karakterleri düzelt</p>
               </div>
               <Switch
-                checked={settings.ai_duzeltme_aktif}
+                checked={settings?.ai_duzeltme_aktif || false}
                 onCheckedChange={(checked) => setSettings({ ...settings, ai_duzeltme_aktif: checked })}
                 data-testid="ai-correction-switch"
               />
