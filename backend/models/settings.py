@@ -6,7 +6,7 @@ class SistemAyarlari(BaseModel):
     id: str = "sistem_ayarlari"  # Tek kayıt
     
     # OCR Motor
-    ocr_motor: str = "paddleocr"  # "paddleocr" veya "easyocr"
+    ocr_motor: str = "easyocr"  # "easyocr" (paddleocr Python 3.14'te desteklenmiyor)
     
     # AI Plaka Düzeltme
     ai_duzeltme_aktif: bool = True
