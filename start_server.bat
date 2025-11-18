@@ -1,49 +1,32 @@
 @echo off
-chcp 65001 >nul
-setlocal enabledelayedexpansion
 
 echo ================================================
-echo Plaka Tanıma Sistemi - Sunucu Başlatma
+echo Starting License Plate Recognition System
 echo ================================================
 echo.
 
-:: Windows kontrolü
-if not "%OS%"=="Windows_NT" (
-    echo HATA: Bu program sadece Windows üzerinde çalışır.
-    pause
-    exit /b 1
-)
+echo Starting Backend on port 8001...
+start "Backend Server" cmd /k "cd /d %~dp0backend && call venv\Scripts\activate.bat && py -m uvicorn server:app --host 0.0.0.0 --port 8001 --reload"
 
-:: Backend başlatma
-echo [1/3] Backend başlatılıyor...
-start "Plaka Tanıma Backend" cmd /k "cd /d %~dp0backend && call venv\Scripts\activate.bat && python -m uvicorn server:app --host 0.0.0.0 --port 8001 --reload"
-echo [✓] Backend başlatıldı (Port: 8001)
+timeout /t 3 >nul
+
+echo Starting Frontend on port 3000...
+start "Frontend Server" cmd /k "cd /d %~dp0frontend && set PORT=3000 && npm start"
+
+timeout /t 5 >nul
+
 echo.
-
-:: Kısa bekleme
-timeout /t 3 /nobreak >nul
-
-:: Frontend başlatma
-echo [2/3] Frontend başlatılıyor...
-start "Plaka Tanıma Frontend" cmd /k "cd /d %~dp0frontend && yarn start"
-echo [✓] Frontend başlatıldı (Port: 3000)
-echo.
-
-:: Tarayıcı açma
-echo [3/3] Dashboard açılıyor...
-timeout /t 5 /nobreak >nul
+echo Opening browser...
 start http://localhost:3000
-echo [✓] Dashboard tarayıcıda açıldı
-echo.
 
+echo.
 echo ================================================
-echo [✓] TÜM SERVİSLER ÇALIŞIYOR!
+echo [SUCCESS] All servers running!
 echo ================================================
 echo.
 echo Backend: http://localhost:8001
 echo Frontend: http://localhost:3000
 echo API Docs: http://localhost:8001/docs
 echo.
-echo Sunucuları durdurmak için açılan komut pencerelerini kapatın.
-echo.
+echo Close the server windows to stop.
 pause

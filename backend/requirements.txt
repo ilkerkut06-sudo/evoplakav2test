@@ -6,13 +6,13 @@ pydantic>=2.6.4
 python-multipart>=0.0.9
 aiohttp>=3.9.0
 
-# Plaka tanima - binary wheels (C++ derleyici gerektirmez)
-opencv-python==4.10.0.84
-ultralytics==8.2.0
-paddleocr==2.7.3
-easyocr==1.7.1
-pillow>=10.2.0
+# Plaka tanima - sabit binary versiyonlar
 numpy==1.26.4
+opencv-python==4.9.0.80
+ultralytics==8.1.0
+paddleocr==2.8.1
+easyocr==1.7.1
+pillow==10.2.0
 
 # PDF olusturma
 reportlab>=4.0.0
