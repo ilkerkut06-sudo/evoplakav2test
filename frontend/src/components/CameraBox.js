@@ -25,9 +25,24 @@ const CameraBox = ({ camera }) => {
 
   const startWebcam = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 640, height: 480 } 
-      });
+      // Belirli bir webcam index kullan (camera.webcam_index)
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      
+      let constraints = { video: { width: 640, height: 480 } };
+      
+      // Eğer webcam_index belirtilmişse ve o index'te cihaz varsa kullan
+      if (camera.webcam_index !== undefined && videoDevices[camera.webcam_index]) {
+        constraints = {
+          video: {
+            deviceId: { exact: videoDevices[camera.webcam_index].deviceId },
+            width: 640,
+            height: 480
+          }
+        };
+      }
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
