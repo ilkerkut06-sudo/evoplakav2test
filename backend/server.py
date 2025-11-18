@@ -93,7 +93,7 @@ logger = logging.getLogger(__name__)
 async def startup_event():
     logger.info("Plaka Tanıma Sistemi başlatıldı")
     logger.info(f"MongoDB: {mongo_url}")
-    logger.info(f"Veritabanı: {os.environ['DB_NAME']}")
+    logger.info(f"Veritabanı: {os.environ.get('DB_NAME', 'test_database')}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
