@@ -239,12 +239,12 @@ const CameraManagement = () => {
 
               <div>
                 <Label className="text-slate-300">Bağlı Kapı (Opsiyonel)</Label>
-                <Select value={formData.bagli_kapi_id} onValueChange={(v) => setFormData({ ...formData, bagli_kapi_id: v })}>
+                <Select value={formData.bagli_kapi_id || 'none'} onValueChange={(v) => setFormData({ ...formData, bagli_kapi_id: v === 'none' ? '' : v })}>
                   <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                     <SelectValue placeholder="Kapı seçin" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700">
-                    <SelectItem value="">Kapı yok</SelectItem>
+                    <SelectItem value="none">Kapı yok</SelectItem>
                     {nodemcus.map(node => (
                       <SelectItem key={node.id} value={node.id}>{node.kapi_adi}</SelectItem>
                     ))}
