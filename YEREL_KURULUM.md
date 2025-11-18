@@ -25,18 +25,30 @@
 
 ## 🔧 Kurulum Adımları
 
-### 1️⃣ Projeyi İndirin
-```bash
-# GitHub'dan klonlayın veya ZIP olarak indirin
-```
+### 1️⃣ Python 3.12 veya 3.13 Kurun
+1. Mevcut Python sürümünüzü kontrol edin:
+   ```
+   py --version
+   ```
 
-### 2️⃣ Eski Virtual Environment'ı Silin (Önemli!)
+2. Eğer Python 3.14 veya başka sürüm varsa:
+   - Python 3.12 indirin: https://www.python.org/downloads/release/python-3120/
+   - **Windows installer (64-bit)** seçin
+   - Kurulum sırasında "Add Python to PATH" işaretleyin ✅
+   
+3. Kurulum sonrası kontrol:
+   ```
+   py --version
+   ```
+   Çıktı: `Python 3.12.x` veya `Python 3.13.x` olmalı
+
+### 2️⃣ Eski Virtual Environment'ı Silin (Kritik!)
 Eğer daha önce kurulum denemişseniz:
 ```bash
-# backend/venv klasörünü tamamen silin
+# backend/venv klasörünü TAMAMEN silin
 # Windows Explorer'dan sağ tık > Sil
-# veya:
-rmdir /s backend\venv
+# veya komut satırından:
+rmdir /s /q backend\venv
 ```
 
 ### 3️⃣ Frontend .env Dosyasını Oluşturun
