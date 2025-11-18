@@ -84,7 +84,7 @@ async def open_door(nodemcu_id: str):
     if not device:
         raise HTTPException(status_code=404, detail="NodeMCU bulunamadı")
     
-    success = await controller.open_door(device['ip_adres'], device['nodemcu_id'])
+    success = await controller.open_door(device['ip_adres'], device.get('endpoint_url', '/open'), device['nodemcu_id'])
     
     if success:
         # Son bağlantı zamanını güncelle
