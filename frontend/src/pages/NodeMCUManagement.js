@@ -173,6 +173,18 @@ const NodeMCUManagement = () => {
               </div>
 
               <div>
+                <Label className="text-slate-300">Endpoint URL *</Label>
+                <Input
+                  required
+                  placeholder="/kapiac veya /kapiac1"
+                  value={formData.endpoint_url}
+                  onChange={(e) => setFormData({ ...formData, endpoint_url: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                />
+                <p className="text-xs text-slate-500 mt-1">Örnek: /kapiac, /kapiac1, /open</p>
+              </div>
+
+              <div>
                 <Label className="text-slate-300">Açıklama</Label>
                 <Input
                   value={formData.aciklama}
