@@ -217,12 +217,12 @@ const Reports = () => {
             </div>
             <div>
               <Label className="text-slate-300">Durum</Label>
-              <Select value={filters.durum} onValueChange={(v) => setFilters({ ...filters, durum: v })}>
+              <Select value={filters.durum || 'all'} onValueChange={(v) => setFilters({ ...filters, durum: v === 'all' ? '' : v })}>
                 <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
                   <SelectValue placeholder="Tümü" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 border-slate-700">
-                  <SelectItem value="">Tümü</SelectItem>
+                  <SelectItem value="all">Tümü</SelectItem>
                   <SelectItem value="Tanımlı">Tanımlı</SelectItem>
                   <SelectItem value="Misafir">Misafir</SelectItem>
                   <SelectItem value="Tanımsız">Tanımsız</SelectItem>
