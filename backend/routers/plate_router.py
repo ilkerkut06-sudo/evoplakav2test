@@ -13,6 +13,10 @@ def set_db(database):
 
 @router.post("", response_model=Plaka)
 async def create_plate(plate_input: PlakaCreate):
+    # İsim ve telefon bilgilerini al (daire senkronizasyonu için)
+    isim_soyisim = plate_input.isim_soyisim
+    telefon = plate_input.telefon
+    
     # Aynı daireye maksimum 3 plaka kontrolü
     existing_plates = await db.plates.count_documents({
         "daire_id": plate_input.daire_id
@@ -26,7 +30,12 @@ async def create_plate(plate_input: PlakaCreate):
     if duplicate:
         raise HTTPException(status_code=400, detail="Bu plaka zaten kayıtlı")
     
+    # Plaka oluştur
     plate_dict = plate_input.model_dump()
+    # İsim ve telefon plaka modeline ait değil, sadece daire güncellemesi için kullanılacak
+    plate_dict.pop('isim_soyisim', None)
+    plate_dict.pop('telefon', None)
+    
     plate_obj = Plaka(**plate_dict)
     doc = plate_obj.model_dump()
     
@@ -38,6 +47,25 @@ async def create_plate(plate_input: PlakaCreate):
         doc['gecerlilik_bitis'] = doc['gecerlilik_bitis'].isoformat()
     
     await db.plates.insert_one(doc)
+    
+    # Daire bilgilerini güncelle (Site Yönetimi ekranında gözükecek)
+    if isim_soyisim and telefon:
+        site = await db.sites.find_one({"id": plate_input.site_id})
+        if site:
+            for i, blok in enumerate(site.get('bloklar', [])):
+                if blok['id'] == plate_input.blok_id:
+                    for j, daire in enumerate(blok.get('daireler', [])):
+                        if daire['id'] == plate_input.daire_id:
+                            await db.sites.update_one(
+                                {"id": plate_input.site_id},
+                                {"$set": {
+                                    f"bloklar.{i}.daireler.{j}.isim_soyisim": isim_soyisim,
+                                    f"bloklar.{i}.daireler.{j}.telefon": telefon
+                                }}
+                            )
+                            break
+                    break
+    
     return plate_obj
 
 @router.get("", response_model=List[Plaka])
