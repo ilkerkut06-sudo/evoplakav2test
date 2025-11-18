@@ -20,10 +20,12 @@ const PlateManagement = () => {
   const [currentPlate, setCurrentPlate] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
-    plaka_no: '',
     site_id: '',
     blok_id: '',
     daire_id: '',
+    plaka_no: '',
+    isim_soyisim: '',
+    telefon: '',
     arac_tipi: 'Sedan',
     durum: 'Tanımlı',
     not_: '',
@@ -54,17 +56,42 @@ const PlateManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Daire bilgilerini güncelle
     try {
+      await axios.put(`${API}/sites/${formData.site_id}/bloklar/${formData.blok_id}/daireler/${formData.daire_id}`, {
+        daire_no: selectedDaire?.daire_no,
+        isim_soyisim: formData.isim_soyisim,
+        telefon: formData.telefon,
+        not_: formData.not_
+      });
+    } catch (error) {
+      console.error('Daire güncellenemedi');
+    }
+
+    // Plaka ekle
+    try {
+      const plakaData = {
+        plaka_no: formData.plaka_no,
+        site_id: formData.site_id,
+        blok_id: formData.blok_id,
+        daire_id: formData.daire_id,
+        arac_tipi: formData.arac_tipi,
+        durum: formData.durum,
+        not_: formData.not_
+      };
+
       if (editMode) {
-        await axios.put(`${API}/plates/${currentPlate.id}`, formData);
+        await axios.put(`${API}/plates/${currentPlate.id}`, plakaData);
         toast.success('Plaka güncellendi');
       } else {
-        await axios.post(`${API}/plates`, formData);
+        await axios.post(`${API}/plates`, plakaData);
         toast.success('Plaka eklendi');
       }
       setOpen(false);
       resetForm();
       fetchPlates();
+      fetchSites(); // Daire bilgileri güncellensin
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Plaka işlemi başarısız');
     }
@@ -82,12 +109,18 @@ const PlateManagement = () => {
   };
 
   const handleEdit = (plate) => {
+    const site = sites.find(s => s.id === plate.site_id);
+    const blok = site?.bloklar?.find(b => b.id === plate.blok_id);
+    const daire = blok?.daireler?.find(d => d.id === plate.daire_id);
+
     setCurrentPlate(plate);
     setFormData({
-      plaka_no: plate.plaka_no,
       site_id: plate.site_id,
       blok_id: plate.blok_id,
       daire_id: plate.daire_id,
+      plaka_no: plate.plaka_no,
+      isim_soyisim: daire?.isim_soyisim || '',
+      telefon: daire?.telefon || '',
       arac_tipi: plate.arac_tipi || 'Sedan',
       durum: plate.durum,
       not_: plate.not_ || '',
@@ -98,10 +131,12 @@ const PlateManagement = () => {
 
   const resetForm = () => {
     setFormData({
-      plaka_no: '',
       site_id: '',
       blok_id: '',
       daire_id: '',
+      plaka_no: '',
+      isim_soyisim: '',
+      telefon: '',
       arac_tipi: 'Sedan',
       durum: 'Tanımlı',
       not_: '',
@@ -121,6 +156,18 @@ const PlateManagement = () => {
 
   const selectedSite = sites.find(s => s.id === formData.site_id) || null;
   const selectedBlok = selectedSite?.bloklar?.find(b => b.id === formData.blok_id) || null;
+  const selectedDaire = selectedBlok?.daireler?.find(d => d.id === formData.daire_id) || null;
+
+  // Daire seçildiğinde bilgileri doldur
+  useEffect(() => {
+    if (selectedDaire && !editMode) {
+      setFormData(prev => ({
+        ...prev,
+        isim_soyisim: selectedDaire.isim_soyisim === 'Boş' ? '' : selectedDaire.isim_soyisim,
+        telefon: selectedDaire.telefon === '-' ? '' : selectedDaire.telefon,
+      }));
+    }
+  }, [formData.daire_id, editMode]);
 
   const filteredPlates = plates.filter(plate => 
     plate.plaka_no.toLowerCase().includes(searchTerm.toLowerCase())
@@ -148,6 +195,83 @@ const PlateManagement = () => {
               <DialogTitle className="text-white">{editMode ? 'Plaka Düzenle' : 'Yeni Plaka Ekle'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label className="text-slate-300">Site *</Label>
+                <Select required value={formData.site_id} onValueChange={(v) => setFormData({ ...formData, site_id: v, blok_id: '', daire_id: '' })}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue placeholder="Site seçin" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-700">
+                    {sites.map(site => (
+                      <SelectItem key={site.id} value={site.id}>{site.site_adi}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.site_id && selectedSite && (
+                <div>
+                  <Label className="text-slate-300">Blok *</Label>
+                  <Select required value={formData.blok_id} onValueChange={(v) => setFormData({ ...formData, blok_id: v, daire_id: '' })}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue placeholder="Blok seçin" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-900 border-slate-700">
+                      {selectedSite.bloklar && selectedSite.bloklar.length > 0 ? (
+                        selectedSite.bloklar.map(blok => (
+                          <SelectItem key={blok.id} value={blok.id}>Blok {blok.blok_adi}</SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-blok" disabled>Bu sitede blok yok</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {formData.blok_id && selectedBlok && (
+                <div>
+                  <Label className="text-slate-300">Daire No *</Label>
+                  <Select required value={formData.daire_id} onValueChange={(v) => setFormData({ ...formData, daire_id: v })}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue placeholder="Daire seçin" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-900 border-slate-700">
+                      {selectedBlok.daireler && selectedBlok.daireler.length > 0 ? (
+                        selectedBlok.daireler.map(daire => (
+                          <SelectItem key={daire.id} value={daire.id}>
+                            Daire {daire.daire_no}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-daire" disabled>Bu blokta daire yok</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-300">İsim Soyisim *</Label>
+                  <Input
+                    required
+                    value={formData.isim_soyisim}
+                    onChange={(e) => setFormData({ ...formData, isim_soyisim: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-300">Telefon *</Label>
+                  <Input
+                    required
+                    value={formData.telefon}
+                    onChange={(e) => setFormData({ ...formData, telefon: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-slate-300">Plaka Numarası *</Label>
@@ -179,62 +303,6 @@ const PlateManagement = () => {
               </div>
 
               <div>
-                <Label className="text-slate-300">Site *</Label>
-                <Select required value={formData.site_id} onValueChange={(v) => setFormData({ ...formData, site_id: v, blok_id: '', daire_id: '' })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                    <SelectValue placeholder="Site seçin" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-700">
-                    {sites.map(site => (
-                      <SelectItem key={site.id} value={site.id}>{site.site_adi}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.site_id && selectedSite && (
-                <div>
-                  <Label className="text-slate-300">Blok *</Label>
-                  <Select required value={formData.blok_id} onValueChange={(v) => setFormData({ ...formData, blok_id: v, daire_id: '' })}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue placeholder="Blok seçin" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-slate-700">
-                      {selectedSite.bloklar && selectedSite.bloklar.length > 0 ? (
-                        selectedSite.bloklar.map(blok => (
-                          <SelectItem key={blok.id} value={blok.id}>{blok.blok_adi}</SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="no-blok" disabled>Bu sitede blok yok</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {formData.blok_id && selectedBlok && (
-                <div>
-                  <Label className="text-slate-300">Daire *</Label>
-                  <Select required value={formData.daire_id} onValueChange={(v) => setFormData({ ...formData, daire_id: v })}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue placeholder="Daire seçin" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-slate-700">
-                      {selectedBlok.daireler && selectedBlok.daireler.length > 0 ? (
-                        selectedBlok.daireler.map(daire => (
-                          <SelectItem key={daire.id} value={daire.id}>
-                            {daire.daire_no} - {daire.isim_soyisim}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="no-daire" disabled>Bu blokta daire yok</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div>
                 <Label className="text-slate-300">Durum</Label>
                 <Select value={formData.durum} onValueChange={(v) => setFormData({ ...formData, durum: v })}>
                   <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
@@ -242,7 +310,6 @@ const PlateManagement = () => {
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700">
                     <SelectItem value="Tanımlı">Tanımlı</SelectItem>
-                    <SelectItem value="Misafir">Misafir</SelectItem>
                     <SelectItem value="Yasaklı">Yasaklı</SelectItem>
                   </SelectContent>
                 </Select>
@@ -280,39 +347,51 @@ const PlateManagement = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredPlates.map((plate) => (
-          <Card key={plate.id} className="bg-slate-800/50 border-slate-700 p-6" data-testid={`plate-card-${plate.id}`}>
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-sky-500/20 flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-sky-400" />
+        {filteredPlates.map((plate) => {
+          const site = sites.find(s => s.id === plate.site_id);
+          const blok = site?.bloklar?.find(b => b.id === plate.blok_id);
+          const daire = blok?.daireler?.find(d => d.id === plate.daire_id);
+
+          return (
+            <Card key={plate.id} className="bg-slate-800/50 border-slate-700 p-6" data-testid={`plate-card-${plate.id}`}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-sky-500/20 flex items-center justify-center">
+                    <CreditCard className="w-6 h-6 text-sky-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-lg" data-testid="plate-number">{plate.plaka_no}</h3>
+                    <p className="text-sm text-slate-400">{plate.arac_tipi}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-white text-lg" data-testid="plate-number">{plate.plaka_no}</h3>
-                  <p className="text-sm text-slate-400">{plate.arac_tipi}</p>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit(plate)} className="text-slate-400 hover:text-white">
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(plate.id)}
+                    className="text-red-400 hover:text-red-300"
+                    data-testid="delete-plate-button"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => handleEdit(plate)} className="text-slate-400 hover:text-white">
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDelete(plate.id)}
-                  className="text-red-400 hover:text-red-300"
-                  data-testid="delete-plate-button"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+              <div className="space-y-2">
+                {getStatusBadge(plate.durum)}
+                {daire && (
+                  <div className="text-sm text-slate-400 mt-2">
+                    <p>{daire.isim_soyisim}</p>
+                    <p className="text-xs text-slate-500">{site?.site_adi} - Blok {blok?.blok_adi} - Daire {daire.daire_no}</p>
+                  </div>
+                )}
+                {plate.not_ && <p className="text-sm text-slate-400 mt-2">{plate.not_}</p>}
               </div>
-            </div>
-            <div className="space-y-2">
-              {getStatusBadge(plate.durum)}
-              {plate.not_ && <p className="text-sm text-slate-400 mt-2">{plate.not_}</p>}
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
 
       {filteredPlates.length === 0 && (
