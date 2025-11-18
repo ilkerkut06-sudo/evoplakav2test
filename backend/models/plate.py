@@ -29,6 +29,9 @@ class PlakaCreate(BaseModel):
 
 class PlakaUpdate(BaseModel):
     plaka_no: Optional[str] = None
+    site_id: Optional[str] = None
+    blok_id: Optional[str] = None
+    daire_id: Optional[str] = None
     arac_tipi: Optional[str] = None
     durum: Optional[str] = None
     gecerlilik_baslangic: Optional[datetime] = None
