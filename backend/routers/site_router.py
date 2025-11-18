@@ -1,16 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from motor.motor_asyncio import AsyncIOMotorClient
 from models.site import Site, SiteCreate, Blok, BlokCreate, Daire, DaireCreate
 from typing import List
-import os
 from datetime import datetime
 
 router = APIRouter(prefix="/sites", tags=["Site Yönetimi"])
 
-# MongoDB bağlantısı
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB bağlantısını server.py'den alacağız
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 # ===== SİTE CRUD =====
 @router.post("", response_model=Site)
