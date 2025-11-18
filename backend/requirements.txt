@@ -7,13 +7,13 @@ python-multipart>=0.0.9
 aiohttp>=3.9.0
 
 # Plaka tanima - SADECE EasyOCR (Python 3.14 uyumlu)
-numpy==1.26.4
-opencv-python==4.9.0.80
-ultralytics==8.1.0
-easyocr==1.7.1
-pillow==10.2.0
-torch==2.2.0
-torchvision==0.17.0
+numpy>=1.26.4
+opencv-python>=4.9.0
+ultralytics>=8.3.0
+easyocr>=1.7.1
+pillow>=11.0.0
+torch>=2.4.0
+torchvision>=0.19.0
 
 # PDF olusturma
 reportlab>=4.0.0
