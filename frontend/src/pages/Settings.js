@@ -90,7 +90,7 @@ const Settings = () => {
                 step="0.1"
                 min="0"
                 max="1"
-                value={settings.ocr_confidence}
+                value={settings?.ocr_confidence || 0.8}
                 onChange={(e) => setSettings({ ...settings, ocr_confidence: parseFloat(e.target.value) })}
                 className="bg-slate-900 border-slate-700 text-white"
               />
