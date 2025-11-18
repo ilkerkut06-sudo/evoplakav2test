@@ -20,12 +20,14 @@ class DaireCreate(BaseModel):
 class Blok(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     blok_adi: str
+    daire_sayisi: int = 0
     aciklama: Optional[str] = None
     daireler: List[Daire] = []
     olusturma_tarihi: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class BlokCreate(BaseModel):
     blok_adi: str
+    daire_sayisi: int = 0
     aciklama: Optional[str] = None
 
 class Site(BaseModel):
