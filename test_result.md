@@ -222,13 +222,15 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Plaka-Daire Senkronizasyon Mantığı"
     - "Plaka Yönetimi - Cascading Dropdown Düzeltmesi"
     - "Kamera Yönetimi - Select Dropdown Düzeltmesi"
     - "Ayarlar Sayfası - OCR Motor Seçimi Düzeltmesi"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Plaka-Daire Senkronizasyon Mantığı"
   test_all: false
-  test_priority: "high_first"
-  backend_testing_complete: true
+  test_priority: "critical_first"
+  backend_testing_complete: false
 
 agent_communication:
   - agent: "main"
