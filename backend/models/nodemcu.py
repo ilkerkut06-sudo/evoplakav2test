@@ -8,6 +8,7 @@ class NodeMCU(BaseModel):
     nodemcu_id: str  # Cihaz ID
     ip_adres: str
     kapi_adi: str
+    endpoint_url: str = "/kapiac"  # Kapı açma endpoint'i
     aciklama: Optional[str] = None
     aktif: bool = True
     son_baglanti: Optional[datetime] = None
