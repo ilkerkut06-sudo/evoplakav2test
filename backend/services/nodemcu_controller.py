@@ -8,17 +8,17 @@ class NodeMCUController:
     def __init__(self):
         self.timeout = aiohttp.ClientTimeout(total=5)
     
-    async def open_door(self, ip_address: str, nodemcu_id: str) -> bool:
+    async def open_door(self, ip_address: str, endpoint_url: str, nodemcu_id: str) -> bool:
         """
         NodeMCU cihazına HTTP isteği göndererek kapıyı aç
         """
         try:
-            url = f"http://{ip_address}/open"
+            url = f"http://{ip_address}{endpoint_url}"
             
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
                 async with session.get(url) as response:
                     if response.status == 200:
-                        logger.info(f"Kapı açıldı: {nodemcu_id} ({ip_address})")
+                        logger.info(f"Kapı açıldı: {nodemcu_id} ({url})")
                         return True
                     else:
                         logger.error(f"Kapı açma hatası: {response.status}")
