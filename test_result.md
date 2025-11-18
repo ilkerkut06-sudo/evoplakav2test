@@ -165,6 +165,18 @@ backend:
         agent: "testing"
         comment: "✅ BACKEND TEST BAŞARILI: Ayarları çekme, OCR motor değiştirme (paddleocr ↔ easyocr), ayarları kaydetme - tüm senaryolar başarıyla test edildi."
 
+  - task: "Plaka-Daire Senkronizasyon Mantığı"
+    implemented: false
+    working: false
+    file: "/app/backend/routers/plate_router.py"
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ KRİTİK SORUN: Plaka-daire senkronizasyon mantığı tamamen eksik. PlakaCreate modelinde isim_soyisim/telefon alanları yok, plaka oluşturma/taşıma apartment bilgilerini güncellemıyor, site API'si plaka bilgilerini göstermiyor. %20 başarı oranı."
+
 frontend:
   - task: "Plaka Yönetimi - Cascading Dropdown Düzeltmesi"
     implemented: true
