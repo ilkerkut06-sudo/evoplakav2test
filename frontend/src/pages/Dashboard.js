@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Activity, Camera, DoorOpen, Car, AlertTriangle, CheckCircle } from 'lucide-react';
 import CameraGrid from '@/components/CameraGrid';
 import LogPanel from '@/components/LogPanel';
 import LiveTicker from '@/components/LiveTicker';
