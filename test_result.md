@@ -361,3 +361,30 @@ agent_communication:
       5. Apartment-plate senkronizasyon mantığı tamamen yazılmalı
       
       📊 SONUÇ: Site Yönetimi - Daire Listesi Güncelleme fonksiyonu çalışmıyor. Kritik backend mantık eksiklikleri var.
+
+  - agent: "testing"
+    message: |
+      🚨 KRİTİK BACKEND SORUN TESPİT EDİLDİ - ACİL MÜDAHALE GEREKLİ
+      
+      Site Yönetimi - Daire Listesi Güncelleme testi sırasında kritik backend mantık eksiklikleri tespit edildi:
+      
+      ❌ TEMEL SORUNLAR:
+      1. PlakaCreate modelinde isim_soyisim ve telefon alanları eksik
+      2. Plaka oluşturma apartment bilgilerini güncellemiyor
+      3. Plaka taşıma yeni apartment bilgilerini güncellemiyor  
+      4. Site API'si apartment-plaka ilişkisini göstermiyor
+      5. Apartment-plate senkronizasyon mantığı tamamen eksik
+      
+      📊 TEST SONUÇLARI:
+      • Site Apartment Update Test: %37.5 başarı (3/8 test geçti)
+      • Comprehensive Backend Test: %20 başarı (1/5 test geçti)
+      • 4 kritik functionality gap tespit edildi
+      
+      🔧 MAIN AGENT İÇİN TAVSİYE:
+      Bu sorunlar temel backend mantık eksiklikleri olduğu için WEBSEARCH TOOL kullanarak:
+      1. "FastAPI Pydantic model apartment plate synchronization"
+      2. "Backend data consistency apartment plate relationship"
+      3. "MongoDB nested document update apartment information"
+      konularında araştırma yapılması önerilir.
+      
+      ⚠️ UYARI: Bu sorunlar düzeltilmeden frontend testleri anlamsız olacaktır.
