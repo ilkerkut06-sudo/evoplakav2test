@@ -184,6 +184,25 @@ const CameraManagement = () => {
                 </Select>
               </div>
 
+              {formData.kamera_tipi === 'WEBCAM' && (
+                <div>
+                  <Label className="text-slate-300">Webcam Index (ID) *</Label>
+                  <Input
+                    required
+                    type="number"
+                    min="0"
+                    max="10"
+                    placeholder="0"
+                    value={formData.webcam_index}
+                    onChange={(e) => setFormData({ ...formData, webcam_index: parseInt(e.target.value) || 0 })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    0 = İlk webcam, 1 = İkinci webcam, vs. Birden fazla webcam varsa farklı değerler girin.
+                  </p>
+                </div>
+              )}
+
               {formData.kamera_tipi === 'RTSP' && (
                 <>
                   <div>
