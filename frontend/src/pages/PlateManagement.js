@@ -119,8 +119,8 @@ const PlateManagement = () => {
     return <Badge className={colors[durum] || colors['Tanımlı']}>{durum}</Badge>;
   };
 
-  const selectedSite = sites.find(s => s.id === formData.site_id);
-  const selectedBlok = selectedSite?.bloklar?.find(b => b.id === formData.blok_id);
+  const selectedSite = sites.find(s => s.id === formData.site_id) || null;
+  const selectedBlok = selectedSite?.bloklar?.find(b => b.id === formData.blok_id) || null;
 
   const filteredPlates = plates.filter(plate => 
     plate.plaka_no.toLowerCase().includes(searchTerm.toLowerCase())
