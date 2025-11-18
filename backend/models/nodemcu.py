@@ -18,6 +18,7 @@ class NodeMCUCreate(BaseModel):
     nodemcu_id: str
     ip_adres: str
     kapi_adi: str
+    endpoint_url: str = "/kapiac"
     aciklama: Optional[str] = None
     aktif: bool = True
 
