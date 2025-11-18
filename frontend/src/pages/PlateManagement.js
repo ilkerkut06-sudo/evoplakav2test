@@ -192,7 +192,7 @@ const PlateManagement = () => {
                 </Select>
               </div>
 
-              {formData.site_id && (
+              {formData.site_id && selectedSite && (
                 <div>
                   <Label className="text-slate-300">Blok *</Label>
                   <Select required value={formData.blok_id} onValueChange={(v) => setFormData({ ...formData, blok_id: v, daire_id: '' })}>
@@ -200,15 +200,19 @@ const PlateManagement = () => {
                       <SelectValue placeholder="Blok seçin" />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-900 border-slate-700">
-                      {selectedSite?.bloklar?.map(blok => (
-                        <SelectItem key={blok.id} value={blok.id}>{blok.blok_adi}</SelectItem>
-                      ))}
+                      {selectedSite.bloklar && selectedSite.bloklar.length > 0 ? (
+                        selectedSite.bloklar.map(blok => (
+                          <SelectItem key={blok.id} value={blok.id}>{blok.blok_adi}</SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-blok" disabled>Bu sitede blok yok</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
               )}
 
-              {formData.blok_id && (
+              {formData.blok_id && selectedBlok && (
                 <div>
                   <Label className="text-slate-300">Daire *</Label>
                   <Select required value={formData.daire_id} onValueChange={(v) => setFormData({ ...formData, daire_id: v })}>
@@ -216,11 +220,15 @@ const PlateManagement = () => {
                       <SelectValue placeholder="Daire seçin" />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-900 border-slate-700">
-                      {selectedBlok?.daireler?.map(daire => (
-                        <SelectItem key={daire.id} value={daire.id}>
-                          {daire.daire_no} - {daire.isim_soyisim}
-                        </SelectItem>
-                      ))}
+                      {selectedBlok.daireler && selectedBlok.daireler.length > 0 ? (
+                        selectedBlok.daireler.map(daire => (
+                          <SelectItem key={daire.id} value={daire.id}>
+                            {daire.daire_no} - {daire.isim_soyisim}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-daire" disabled>Bu blokta daire yok</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
