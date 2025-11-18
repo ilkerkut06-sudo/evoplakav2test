@@ -50,6 +50,14 @@ echo.
 
 echo [5/6] Installing frontend packages...
 cd /d "%~dp0frontend"
+
+REM Create .env.local for local backend connection
+if not exist ".env.local" (
+    echo Creating .env.local for local development...
+    echo REACT_APP_BACKEND_URL=http://localhost:8001 > .env.local
+    echo .env.local created
+)
+
 if not exist "node_modules" (
     echo Checking for Yarn...
     where yarn >nul 2>&1
