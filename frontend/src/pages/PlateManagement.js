@@ -62,19 +62,6 @@ const PlateManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Daire bilgilerini güncelle
-    try {
-      await axios.put(`${API}/sites/${formData.site_id}/bloklar/${formData.blok_id}/daireler/${formData.daire_id}`, {
-        daire_no: selectedDaire?.daire_no || '',
-        isim_soyisim: formData.isim_soyisim,
-        telefon: formData.telefon,
-        not_: formData.not_
-      });
-    } catch (error) {
-      console.error('Daire güncellenemedi:', error);
-    }
-
-    // Plaka ekle/güncelle
     try {
       const plakaData = {
         plaka_no: formData.plaka_no,
@@ -87,43 +74,66 @@ const PlateManagement = () => {
       };
 
       if (editMode && currentPlate) {
+        // DÜZENLEME MODU
+        
         // Plaka taşınıyorsa eski dairenin bilgilerini temizle
         if (currentPlate.daire_id !== formData.daire_id) {
-          try {
-            const eskiSite = sites.find(s => s.id === currentPlate.site_id);
-            const eskiBlok = eskiSite?.bloklar?.find(b => b.id === currentPlate.blok_id);
-            const eskiDaire = eskiBlok?.daireler?.find(d => d.id === currentPlate.daire_id);
-            
-            if (eskiDaire) {
-              // ESKİ DAİREYİ TEMİZLE - İsim ve telefonu "Boş" ve "-" yap
-              await axios.put(
-                `${API}/sites/${currentPlate.site_id}/bloklar/${currentPlate.blok_id}/daireler/${currentPlate.daire_id}`,
-                {
-                  daire_no: eskiDaire.daire_no,
-                  isim_soyisim: 'Boş',
-                  telefon: '-',
-                  not_: ''
-                }
-              );
-              console.log('✓ Eski daire temizlendi:', eskiDaire.daire_no);
+          // Backend otomatik temizleyecek, sadece plakayı güncelle
+          await axios.put(`${API}/plates/${currentPlate.id}`, plakaData);
+          
+          // YENİ DAİREYİ GÜNCELLE
+          await axios.put(
+            `${API}/sites/${formData.site_id}/bloklar/${formData.blok_id}/daireler/${formData.daire_id}`,
+            {
+              daire_no: selectedDaire?.daire_no || '',
+              isim_soyisim: formData.isim_soyisim,
+              telefon: formData.telefon,
+              not_: formData.not_
             }
-          } catch (error) {
-            console.error('✗ Eski daire temizlenemedi:', error);
-            toast.error('Eski daire temizlenemedi!');
-          }
+          );
+          
+          toast.success('Plaka taşındı, daireler güncellendi');
+        } else {
+          // Aynı dairede kalıyor, sadece plaka bilgilerini güncelle
+          await axios.put(`${API}/plates/${currentPlate.id}`, plakaData);
+          
+          // Daire bilgilerini güncelle
+          await axios.put(
+            `${API}/sites/${formData.site_id}/bloklar/${formData.blok_id}/daireler/${formData.daire_id}`,
+            {
+              daire_no: selectedDaire?.daire_no || '',
+              isim_soyisim: formData.isim_soyisim,
+              telefon: formData.telefon,
+              not_: formData.not_
+            }
+          );
+          
+          toast.success('Plaka ve daire bilgileri güncellendi');
         }
-        
-        await axios.put(`${API}/plates/${currentPlate.id}`, plakaData);
-        toast.success('Plaka güncellendi ve eski daire temizlendi');
       } else {
+        // YENİ PLAKA EKLEME
         await axios.post(`${API}/plates`, plakaData);
+        
+        // YENİ DAİREYİ GÜNCELLE
+        await axios.put(
+          `${API}/sites/${formData.site_id}/bloklar/${formData.blok_id}/daireler/${formData.daire_id}`,
+          {
+            daire_no: selectedDaire?.daire_no || '',
+            isim_soyisim: formData.isim_soyisim,
+            telefon: formData.telefon,
+            not_: formData.not_
+          }
+        );
+        
         toast.success('Plaka eklendi');
       }
+      
       setOpen(false);
       resetForm();
       fetchPlates();
-      fetchSites(); // Daire bilgileri güncellensin
+      fetchSites(); // Site bilgilerini yenile
     } catch (error) {
+      console.error('Plaka işlemi hatası:', error);
       toast.error(error.response?.data?.detail || 'Plaka işlemi başarısız');
     }
   };
