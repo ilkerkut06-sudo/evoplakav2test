@@ -74,6 +74,7 @@ const NodeMCUManagement = () => {
       ip_adres: device.ip_adres,
       kapi_adi: device.kapi_adi,
       aciklama: device.aciklama || '',
+      endpoint_url: device.endpoint_url || '/kapiac',
       aktif: device.aktif,
     });
     setEditMode(true);
