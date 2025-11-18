@@ -11,7 +11,7 @@ start "Backend Server" cmd /k "cd /d %~dp0backend && call venv\Scripts\activate.
 timeout /t 3 >nul
 
 echo Starting Frontend on port 3000...
-start "Frontend Server" cmd /k "cd /d %~dp0frontend && set PORT=3000 && npm start"
+start "Frontend Server" cmd /k "cd /d %~dp0frontend && set PORT=3000 && yarn start"
 
 timeout /t 5 >nul
 
