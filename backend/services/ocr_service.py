@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class OCRService:
-    def __init__(self, engine="paddleocr"):
+    def __init__(self, engine="easyocr"):
         self.engine = engine
         self.paddle_ocr = None
         self.easy_ocr = None
@@ -16,13 +16,20 @@ class OCRService:
         """OCR motorunu başlat"""
         try:
             if self.engine == "paddleocr":
-                from paddleocr import PaddleOCR
-                self.paddle_ocr = PaddleOCR(
-                    use_angle_cls=True,
-                    lang='en',
-                    show_log=False
-                )
-                logger.info("PaddleOCR başlatıldı")
+                try:
+                    from paddleocr import PaddleOCR
+                    self.paddle_ocr = PaddleOCR(
+                        use_angle_cls=True,
+                        lang='en',
+                        show_log=False
+                    )
+                    logger.info("PaddleOCR başlatıldı")
+                except ImportError:
+                    logger.warning("PaddleOCR yüklü değil, EasyOCR'ye geçiliyor")
+                    self.engine = "easyocr"
+                    import easyocr
+                    self.easy_ocr = easyocr.Reader(['en'], gpu=False)
+                    logger.info("EasyOCR başlatıldı")
             elif self.engine == "easyocr":
                 import easyocr
                 self.easy_ocr = easyocr.Reader(['en'], gpu=False)
