@@ -113,27 +113,57 @@ user_problem_statement: |
 backend:
   - task: "Site Yönetimi - Blok Düzenleme API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routers/site_router.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Blok düzenleme endpoint'i güncellendi. Artık daire_sayisi değişikliği destekleniyor. Yeni daire eklenirse otomatik oluşturuluyor, azalırsa sadece boş daireler siliniyor."
+      - working: true
+        agent: "testing"
+        comment: "✅ BACKEND TEST BAŞARILI: Site oluşturma, blok oluşturma (3 daire), daire sayısını 5'e çıkarma (2 yeni daire eklendi), daire sayısını 3'e düşürme (boş daireler silindi), blok adı değiştirme - tüm senaryolar başarıyla test edildi."
 
   - task: "Plaka Yönetimi - Plaka Taşıma Mantığı"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routers/plate_router.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Plaka düzenlenirken daire değişirse eski dairenin verisi temizleniyor."
+      - working: true
+        agent: "testing"
+        comment: "✅ BACKEND TEST BAŞARILI: Plaka oluşturma, plaka taşıma (farklı daireye), plaka referans güncelleme, plaka kontrol - tüm senaryolar başarıyla test edildi. DÜZELTME: PlakaUpdate modelinde eksik olan daire_id, site_id, blok_id alanları eklendi."
+
+  - task: "Kamera Yönetimi API"
+    implemented: true
+    working: true
+    file: "/app/backend/routers/camera_router.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ BACKEND TEST BAŞARILI: Kamera oluşturma (bagli_kapi_id boş), kamera listesi çekme, kamera düzenleme - tüm senaryolar başarıyla test edildi."
+
+  - task: "Ayarlar Yönetimi API"
+    implemented: true
+    working: true
+    file: "/app/backend/routers/settings_router.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ BACKEND TEST BAŞARILI: Ayarları çekme, OCR motor değiştirme (paddleocr ↔ easyocr), ayarları kaydetme - tüm senaryolar başarıyla test edildi."
 
 frontend:
   - task: "Plaka Yönetimi - Cascading Dropdown Düzeltmesi"
