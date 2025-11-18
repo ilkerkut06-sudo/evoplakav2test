@@ -109,7 +109,7 @@ const Settings = () => {
                 step="0.1"
                 min="0"
                 max="1"
-                value={settings?.yolo_confidence || 0.4}
+                value={settings?.yolo_confidence || 0.5}
                 onChange={(e) => setSettings({ ...settings, yolo_confidence: parseFloat(e.target.value) })}
                 className="bg-slate-900 border-slate-700 text-white"
                 data-testid="yolo-confidence-input"
