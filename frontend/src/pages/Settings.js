@@ -126,7 +126,7 @@ const Settings = () => {
             <div className="flex items-center justify-between">
               <Label className="text-slate-300">Gece Modu Aktif</Label>
               <Switch
-                checked={settings.gece_modu_aktif}
+                checked={settings?.gece_modu_aktif || false}
                 onCheckedChange={(checked) => setSettings({ ...settings, gece_modu_aktif: checked })}
                 data-testid="night-mode-switch"
               />
@@ -137,7 +137,7 @@ const Settings = () => {
                 <Label className="text-slate-300">Başlangıç Saati</Label>
                 <Input
                   type="time"
-                  value={settings.gece_modu_baslangic}
+                  value={settings?.gece_modu_baslangic || '20:00'}
                   onChange={(e) => setSettings({ ...settings, gece_modu_baslangic: e.target.value })}
                   className="bg-slate-900 border-slate-700 text-white"
                 />
@@ -146,7 +146,7 @@ const Settings = () => {
                 <Label className="text-slate-300">Bitiş Saati</Label>
                 <Input
                   type="time"
-                  value={settings.gece_modu_bitis}
+                  value={settings?.gece_modu_bitis || '06:00'}
                   onChange={(e) => setSettings({ ...settings, gece_modu_bitis: e.target.value })}
                   className="bg-slate-900 border-slate-700 text-white"
                 />
@@ -160,7 +160,7 @@ const Settings = () => {
                 step="0.1"
                 min="0.5"
                 max="2"
-                value={settings.gece_brightness}
+                value={settings?.gece_brightness || 1.2}
                 onChange={(e) => setSettings({ ...settings, gece_brightness: parseFloat(e.target.value) })}
                 className="bg-slate-900 border-slate-700 text-white"
               />
@@ -173,7 +173,7 @@ const Settings = () => {
                 step="0.1"
                 min="0.5"
                 max="2"
-                value={settings.gece_contrast}
+                value={settings?.gece_contrast || 1.3}
                 onChange={(e) => setSettings({ ...settings, gece_contrast: parseFloat(e.target.value) })}
                 className="bg-slate-900 border-slate-700 text-white"
               />
