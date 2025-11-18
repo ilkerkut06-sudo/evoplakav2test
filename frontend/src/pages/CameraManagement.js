@@ -25,6 +25,7 @@ const CameraManagement = () => {
     giris_cikis: 'Giriş',
     main_stream_url: '',
     sub_stream_url: '',
+    webcam_index: 0,
     onvif_ip: '',
     onvif_port: 80,
     onvif_kullanici: '',
