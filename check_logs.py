@@ -6,7 +6,7 @@ Eklenen test loglarını kontrol et
 import asyncio
 import aiohttp
 
-BACKEND_URL = "https://plateguard-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://siteplates.preview.emergentagent.com/api"
 
 async def check_logs():
     async with aiohttp.ClientSession() as session:

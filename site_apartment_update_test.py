@@ -10,7 +10,7 @@ import json
 from typing import Dict, Any, Optional
 
 # Backend URL from the review request
-BACKEND_URL = "https://plateguard-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://siteplates.preview.emergentagent.com/api"
 
 class SiteApartmentUpdateTester:
     def __init__(self):

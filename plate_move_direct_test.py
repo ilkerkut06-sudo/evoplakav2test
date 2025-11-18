@@ -7,7 +7,7 @@ import asyncio
 import aiohttp
 import json
 
-BACKEND_URL = "https://plateguard-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://siteplates.preview.emergentagent.com/api"
 
 # Bilinen ID'ler (check_site_structure.py çıktısından)
 SITE_ID = "d89aabf6-a7b6-454c-aad5-11bacffa80c9"

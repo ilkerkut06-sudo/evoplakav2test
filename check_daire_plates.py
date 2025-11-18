@@ -6,7 +6,7 @@ Daire 3'te başka plaka var mı kontrol et
 import asyncio
 import aiohttp
 
-BACKEND_URL = "https://plateguard-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://siteplates.preview.emergentagent.com/api"
 DAIRE_3_ID = "62878c31-42b0-44d8-a529-e000318ca6c2"
 
 async def check_daire_plates():

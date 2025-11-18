@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional
 import uuid
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://plateguard-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://siteplates.preview.emergentagent.com/api"
 
 class PlateMoveTester:
     def __init__(self):
