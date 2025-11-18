@@ -58,7 +58,7 @@ const Settings = () => {
             <div>
               <Label className="text-slate-300">Motor Seçimi</Label>
               <Select
-                value={settings.ocr_motor}
+                value={settings?.ocr_motor || 'paddleocr'}
                 onValueChange={(value) => setSettings({ ...settings, ocr_motor: value })}
               >
                 <SelectTrigger className="bg-slate-900 border-slate-700 text-white" data-testid="ocr-engine-select">
