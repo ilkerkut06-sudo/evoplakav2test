@@ -86,6 +86,7 @@ const NodeMCUManagement = () => {
       ip_adres: '',
       kapi_adi: '',
       aciklama: '',
+      endpoint_url: '/kapiac',
       aktif: true,
     });
     setEditMode(false);
