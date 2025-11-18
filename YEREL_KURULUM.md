@@ -96,9 +96,17 @@ Tarayıcınızda otomatik açılacak:
 
 ## 🐛 Sorun Giderme
 
+### Hata: Pillow/PyTorch/NumPy derleme hatası
+**Sebep:** Python 3.14 veya uyumsuz sürüm kullanıyorsunuz
+**Çözüm:**
+1. Python 3.12 veya 3.13 kurun
+2. `backend\venv` klasörünü tamamen silin
+3. `setup_and_start.bat` dosyasını yeniden çalıştırın
+
 ### Hata: "Python not found"
 - Python kurulu mu kontrol edin: `py --version`
-- Değilse: https://www.python.org/downloads/
+- Python 3.12 veya 3.13 kurulu olmalı
+- İndir: https://www.python.org/downloads/release/python-3120/
 
 ### Hata: "Node.js not found"
 - Node.js kurulu mu kontrol edin: `node --version`
