@@ -16,6 +16,9 @@
    - Kurulu olanı kontrol: `py --version`
    
 2. **Node.js 16+** (Kurulu olanı kontrol: `node --version`)
+   - İsteğe bağlı: Yarn package manager (önerilir)
+   - Yarn kurulumu: `npm install -g yarn`
+   - Yarn yoksa otomatik olarak npm kullanılır
 
 3. **MongoDB Community Edition**
    - İndir: https://www.mongodb.com/try/download/community
