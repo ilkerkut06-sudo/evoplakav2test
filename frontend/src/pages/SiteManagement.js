@@ -16,7 +16,9 @@ const SiteManagement = () => {
   const [openSite, setOpenSite] = useState(false);
   const [openBlok, setOpenBlok] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
-  const [editMode, setEditMode] = useState(false);
+  const [selectedBlok, setSelectedBlok] = useState(null);
+  const [editSiteMode, setEditSiteMode] = useState(false);
+  const [editBlokMode, setEditBlokMode] = useState(false);
   
   const [siteForm, setSiteForm] = useState({
     site_adi: '',
@@ -47,7 +49,7 @@ const SiteManagement = () => {
   const handleSiteSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editMode && selectedSite) {
+      if (editSiteMode && selectedSite) {
         await axios.put(`${API}/sites/${selectedSite.id}`, siteForm);
         toast.success('Site güncellendi');
       } else {
@@ -65,13 +67,18 @@ const SiteManagement = () => {
   const handleBlokSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/sites/${selectedSite.id}/bloklar`, blokForm);
-      toast.success(`Blok ve ${blokForm.daire_sayisi} daire eklendi`);
+      if (editBlokMode && selectedBlok) {
+        await axios.put(`${API}/sites/${selectedSite.id}/bloklar/${selectedBlok.id}`, blokForm);
+        toast.success('Blok güncellendi');
+      } else {
+        await axios.post(`${API}/sites/${selectedSite.id}/bloklar`, blokForm);
+        toast.success(`Blok ve ${blokForm.daire_sayisi} daire eklendi`);
+      }
       setOpenBlok(false);
       resetBlokForm();
       fetchSites();
     } catch (error) {
-      toast.error('Blok eklenemedi');
+      toast.error('Blok işlemi başarısız');
     }
   };
 
@@ -116,18 +123,32 @@ const SiteManagement = () => {
       yonetici_adi: site.yonetici_adi || '',
       yonetici_telefon: site.yonetici_telefon || '',
     });
-    setEditMode(true);
+    setEditSiteMode(true);
     setOpenSite(true);
+  };
+
+  const handleEditBlok = (site, blok) => {
+    setSelectedSite(site);
+    setSelectedBlok(blok);
+    setBlokForm({
+      blok_adi: blok.blok_adi,
+      daire_sayisi: blok.daire_sayisi || blok.daireler?.length || 0,
+      aciklama: blok.aciklama || '',
+    });
+    setEditBlokMode(true);
+    setOpenBlok(true);
   };
 
   const resetSiteForm = () => {
     setSiteForm({ site_adi: '', adres: '', yonetici_adi: '', yonetici_telefon: '' });
-    setEditMode(false);
+    setEditSiteMode(false);
     setSelectedSite(null);
   };
 
   const resetBlokForm = () => {
     setBlokForm({ blok_adi: '', daire_sayisi: 1, aciklama: '' });
+    setEditBlokMode(false);
+    setSelectedBlok(null);
   };
 
   return (
@@ -149,7 +170,7 @@ const SiteManagement = () => {
           </DialogTrigger>
           <DialogContent className="bg-slate-900 border-slate-700" data-testid="add-site-dialog">
             <DialogHeader>
-              <DialogTitle className="text-white">{editMode ? 'Site Düzenle' : 'Yeni Site Ekle'}</DialogTitle>
+              <DialogTitle className="text-white">{editSiteMode ? 'Site Düzenle' : 'Yeni Site Ekle'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSiteSubmit} className="space-y-4">
               <div>
@@ -159,7 +180,6 @@ const SiteManagement = () => {
                   value={siteForm.site_adi}
                   onChange={(e) => setSiteForm({ ...siteForm, site_adi: e.target.value })}
                   className="bg-slate-800 border-slate-700 text-white"
-                  data-testid="site-name-input"
                 />
               </div>
               <div>
@@ -188,18 +208,20 @@ const SiteManagement = () => {
                 />
               </div>
               <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700">
-                {editMode ? 'Güncelle' : 'Site Ekle'}
+                {editSiteMode ? 'Güncelle' : 'Site Ekle'}
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Blok Ekleme Dialog */}
+      {/* Blok Ekleme/Düzenleme Dialog */}
       <Dialog open={openBlok} onOpenChange={(o) => { setOpenBlok(o); if (!o) resetBlokForm(); }}>
         <DialogContent className="bg-slate-900 border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Blok Ekle - {selectedSite?.site_adi}</DialogTitle>
+            <DialogTitle className="text-white">
+              {editBlokMode ? `Blok Düzenle - ${selectedSite?.site_adi}` : `Blok Ekle - ${selectedSite?.site_adi}`}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleBlokSubmit} className="space-y-4">
             <div>
@@ -224,7 +246,11 @@ const SiteManagement = () => {
                 onChange={(e) => setBlokForm({ ...blokForm, daire_sayisi: parseInt(e.target.value) || 1 })}
                 className="bg-slate-800 border-slate-700 text-white"
               />
-              <p className="text-xs text-slate-500 mt-1">Bu sayıda daire otomatik oluşturulacak (1'den başlayarak)</p>
+              {editBlokMode ? (
+                <p className="text-xs text-amber-500 mt-1">Uyarı: Daire sayısı değiştirilirse mevcut daireler etkilenebilir</p>
+              ) : (
+                <p className="text-xs text-slate-500 mt-1">Bu sayıda daire otomatik oluşturulacak (1'den başlayarak)</p>
+              )}
             </div>
             <div>
               <Label className="text-slate-300">Açıklama</Label>
@@ -235,7 +261,7 @@ const SiteManagement = () => {
               />
             </div>
             <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700">
-              Blok ve Daireleri Oluştur
+              {editBlokMode ? 'Güncelle' : 'Blok ve Daireleri Oluştur'}
             </Button>
           </form>
         </DialogContent>
@@ -244,7 +270,7 @@ const SiteManagement = () => {
       {/* Site Listesi */}
       <div className="space-y-4">
         {sites.map((site) => (
-          <Card key={site.id} className="bg-slate-800/50 border-slate-700 p-6" data-testid={`site-card-${site.id}`}>
+          <Card key={site.id} className="bg-slate-800/50 border-slate-700 p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-lg bg-sky-500/20 flex items-center justify-center">
@@ -301,6 +327,14 @@ const SiteManagement = () => {
                         <div className="flex gap-2 mb-3">
                           <Button
                             size="sm"
+                            onClick={() => handleEditBlok(site, blok)}
+                            className="bg-sky-600 hover:bg-sky-700"
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
+                            Blok Düzenle
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="destructive"
                             onClick={() => handleDeleteBlok(site.id, blok.id)}
                           >
@@ -328,7 +362,7 @@ const SiteManagement = () => {
                                     <Trash2 className="w-3 h-3" />
                                   </Button>
                                 </div>
-                                {daire.isim_soyisim && (
+                                {daire.isim_soyisim && daire.isim_soyisim !== 'Boş' && (
                                   <p className="text-xs text-slate-400 mt-1 truncate">{daire.isim_soyisim}</p>
                                 )}
                               </Card>
