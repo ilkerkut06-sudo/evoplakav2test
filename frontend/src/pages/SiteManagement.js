@@ -15,9 +15,7 @@ const SiteManagement = () => {
   const [sites, setSites] = useState([]);
   const [openSite, setOpenSite] = useState(false);
   const [openBlok, setOpenBlok] = useState(false);
-  const [openDaire, setOpenDaire] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
-  const [selectedBlok, setSelectedBlok] = useState(null);
   const [editMode, setEditMode] = useState(false);
   
   const [siteForm, setSiteForm] = useState({
@@ -29,14 +27,8 @@ const SiteManagement = () => {
 
   const [blokForm, setBlokForm] = useState({
     blok_adi: '',
+    daire_sayisi: 1,
     aciklama: '',
-  });
-
-  const [daireForm, setDaireForm] = useState({
-    daire_no: '',
-    isim_soyisim: '',
-    telefon: '',
-    not_: '',
   });
 
   useEffect(() => {
@@ -74,25 +66,12 @@ const SiteManagement = () => {
     e.preventDefault();
     try {
       await axios.post(`${API}/sites/${selectedSite.id}/bloklar`, blokForm);
-      toast.success('Blok eklendi');
+      toast.success(`Blok ve ${blokForm.daire_sayisi} daire eklendi`);
       setOpenBlok(false);
       resetBlokForm();
       fetchSites();
     } catch (error) {
       toast.error('Blok eklenemedi');
-    }
-  };
-
-  const handleDaireSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API}/sites/${selectedSite.id}/bloklar/${selectedBlok.id}/daireler`, daireForm);
-      toast.success('Daire eklendi');
-      setOpenDaire(false);
-      resetDaireForm();
-      fetchSites();
-    } catch (error) {
-      toast.error('Daire eklenemedi');
     }
   };
 
@@ -148,12 +127,7 @@ const SiteManagement = () => {
   };
 
   const resetBlokForm = () => {
-    setBlokForm({ blok_adi: '', aciklama: '' });
-    setSelectedBlok(null);
-  };
-
-  const resetDaireForm = () => {
-    setDaireForm({ daire_no: '', isim_soyisim: '', telefon: '', not_: '' });
+    setBlokForm({ blok_adi: '', daire_sayisi: 1, aciklama: '' });
   };
 
   return (
@@ -163,7 +137,7 @@ const SiteManagement = () => {
           <h1 className="text-3xl font-bold text-white" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             Site Yönetimi
           </h1>
-          <p className="text-slate-400 mt-1">Site, blok ve daire yönetimi</p>
+          <p className="text-slate-400 mt-1">Site yapısını oluşturun (Site → Blok → Daire)</p>
         </div>
 
         <Dialog open={openSite} onOpenChange={(o) => { setOpenSite(o); if (!o) resetSiteForm(); }}>
@@ -239,6 +213,20 @@ const SiteManagement = () => {
               />
             </div>
             <div>
+              <Label className="text-slate-300">Daire Sayısı *</Label>
+              <Input
+                required
+                type="number"
+                min="1"
+                max="200"
+                placeholder="55"
+                value={blokForm.daire_sayisi}
+                onChange={(e) => setBlokForm({ ...blokForm, daire_sayisi: parseInt(e.target.value) || 1 })}
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+              <p className="text-xs text-slate-500 mt-1">Bu sayıda daire otomatik oluşturulacak (1'den başlayarak)</p>
+            </div>
+            <div>
               <Label className="text-slate-300">Açıklama</Label>
               <Input
                 value={blokForm.aciklama}
@@ -247,57 +235,7 @@ const SiteManagement = () => {
               />
             </div>
             <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700">
-              Blok Ekle
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Daire Ekleme Dialog */}
-      <Dialog open={openDaire} onOpenChange={(o) => { setOpenDaire(o); if (!o) resetDaireForm(); }}>
-        <DialogContent className="bg-slate-900 border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="text-white">Daire Ekle - {selectedBlok?.blok_adi}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleDaireSubmit} className="space-y-4">
-            <div>
-              <Label className="text-slate-300">Daire No *</Label>
-              <Input
-                required
-                placeholder="101, 102..."
-                value={daireForm.daire_no}
-                onChange={(e) => setDaireForm({ ...daireForm, daire_no: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300">İsim Soyisim *</Label>
-              <Input
-                required
-                value={daireForm.isim_soyisim}
-                onChange={(e) => setDaireForm({ ...daireForm, isim_soyisim: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300">Telefon *</Label>
-              <Input
-                required
-                value={daireForm.telefon}
-                onChange={(e) => setDaireForm({ ...daireForm, telefon: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300">Not</Label>
-              <Input
-                value={daireForm.not_}
-                onChange={(e) => setDaireForm({ ...daireForm, not_: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-            <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700">
-              Daire Ekle
+              Blok ve Daireleri Oluştur
             </Button>
           </form>
         </DialogContent>
@@ -363,14 +301,6 @@ const SiteManagement = () => {
                         <div className="flex gap-2 mb-3">
                           <Button
                             size="sm"
-                            onClick={() => { setSelectedSite(site); setSelectedBlok(blok); setOpenDaire(true); }}
-                            className="bg-emerald-600 hover:bg-emerald-700"
-                          >
-                            <Plus className="w-3 h-3 mr-1" />
-                            Daire Ekle
-                          </Button>
-                          <Button
-                            size="sm"
                             variant="destructive"
                             onClick={() => handleDeleteBlok(site.id, blok.id)}
                           >
@@ -381,27 +311,26 @@ const SiteManagement = () => {
 
                         {/* Daireler */}
                         {blok.daireler && blok.daireler.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
                             {blok.daireler.map((daire) => (
-                              <Card key={daire.id} className="bg-slate-900/50 border-slate-700 p-3">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4 text-slate-400" />
-                                    <div>
-                                      <p className="text-sm font-semibold text-white">Daire {daire.daire_no}</p>
-                                      <p className="text-xs text-slate-400">{daire.isim_soyisim}</p>
-                                      <p className="text-xs text-slate-500">{daire.telefon}</p>
-                                    </div>
+                              <Card key={daire.id} className="bg-slate-900/50 border-slate-700 p-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1">
+                                    <Users className="w-3 h-3 text-slate-400" />
+                                    <span className="text-xs font-semibold text-white">{daire.daire_no}</span>
                                   </div>
                                   <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleDeleteDaire(site.id, blok.id, daire.id)}
-                                    className="text-red-400 hover:text-red-300 h-6 w-6 p-0"
+                                    className="text-red-400 hover:text-red-300 h-5 w-5 p-0"
                                   >
                                     <Trash2 className="w-3 h-3" />
                                   </Button>
                                 </div>
+                                {daire.isim_soyisim && (
+                                  <p className="text-xs text-slate-400 mt-1 truncate">{daire.isim_soyisim}</p>
+                                )}
                               </Card>
                             ))}
                           </div>
