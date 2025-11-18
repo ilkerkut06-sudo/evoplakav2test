@@ -58,8 +58,9 @@ if not exist ".env.local" (
     echo .env.local created
 )
 
+REM Always install if node_modules doesn't exist or is incomplete
 if not exist "node_modules" (
-    echo Checking for Yarn...
+    echo Installing frontend packages...
     where yarn >nul 2>&1
     if errorlevel 1 (
         echo Yarn not found, using npm with --legacy-peer-deps...
@@ -72,6 +73,22 @@ if not exist "node_modules" (
         echo [ERROR] Frontend packages installation failed!
         pause
         exit /b 1
+    )
+) else (
+    echo node_modules exists, verifying craco...
+    where yarn >nul 2>&1
+    if errorlevel 1 (
+        npm list @craco/craco >nul 2>&1
+        if errorlevel 1 (
+            echo craco missing, reinstalling...
+            npm install --legacy-peer-deps
+        )
+    ) else (
+        yarn list @craco/craco >nul 2>&1
+        if errorlevel 1 (
+            echo craco missing, reinstalling...
+            yarn install
+        )
     )
 )
 echo Frontend packages installed
