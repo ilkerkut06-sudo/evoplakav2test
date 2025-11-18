@@ -26,6 +26,9 @@ class PlakaCreate(BaseModel):
     gecerlilik_baslangic: Optional[datetime] = None
     gecerlilik_bitis: Optional[datetime] = None
     not_: Optional[str] = None
+    # Daire bilgileri - Frontend'ten gönderilecek
+    isim_soyisim: Optional[str] = None
+    telefon: Optional[str] = None
 
 class PlakaUpdate(BaseModel):
     plaka_no: Optional[str] = None
@@ -37,3 +40,6 @@ class PlakaUpdate(BaseModel):
     gecerlilik_baslangic: Optional[datetime] = None
     gecerlilik_bitis: Optional[datetime] = None
     not_: Optional[str] = None
+    # Daire bilgileri - Frontend'ten gönderilecek
+    isim_soyisim: Optional[str] = None
+    telefon: Optional[str] = None
