@@ -70,7 +70,10 @@ const PlateManagement = () => {
         daire_id: formData.daire_id,
         arac_tipi: formData.arac_tipi,
         durum: formData.durum,
-        not_: formData.not_
+        not_: formData.not_,
+        // Daire bilgileri - Backend senkronizasyonu için
+        isim_soyisim: formData.isim_soyisim,
+        telefon: formData.telefon
       };
 
       if (editMode && currentPlate) {
