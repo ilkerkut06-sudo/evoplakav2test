@@ -76,6 +76,22 @@ async def add_blok(site_id: str, blok_input: BlokCreate):
     blok_doc = blok_obj.model_dump()
     blok_doc['olusturma_tarihi'] = blok_doc['olusturma_tarihi'].isoformat()
     
+    # Daire sayısı kadar otomatik daire oluştur
+    daire_sayisi = blok_dict.get('daire_sayisi', 0)
+    if daire_sayisi > 0:
+        daireler = []
+        for i in range(1, daire_sayisi + 1):
+            daire = Daire(
+                daire_no=str(i),
+                isim_soyisim="Boş",
+                telefon="-",
+                not_=None
+            )
+            daire_doc = daire.model_dump()
+            daire_doc['olusturma_tarihi'] = daire_doc['olusturma_tarihi'].isoformat()
+            daireler.append(daire_doc)
+        blok_doc['daireler'] = daireler
+    
     await db.sites.update_one(
         {"id": site_id},
         {"$push": {"bloklar": blok_doc}}
