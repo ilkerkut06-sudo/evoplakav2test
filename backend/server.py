@@ -43,6 +43,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Router'lara database instance'ını geçir
+site_router.set_db(db)
+plate_router.set_db(db)
+camera_router.set_db(db)
+nodemcu_router.set_db(db)
+log_router.set_db(db)
+settings_router.set_db(db)
+report_router.set_db(db)
+stream_router.set_db(db)
+
 # Router'ları ekle
 app.include_router(site_router.router, prefix="/api")
 app.include_router(plate_router.router, prefix="/api")
