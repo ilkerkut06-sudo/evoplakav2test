@@ -66,14 +66,14 @@ const LiveTicker = ({ logs }) => {
             return (
               <div 
                 key={log.id || index} 
-                className="p-3 hover:bg-slate-900/30 transition-colors"
+                className="p-2 hover:bg-slate-900/30 transition-colors"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <span className="font-bold text-white text-lg tracking-wider">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="font-bold text-white text-base tracking-wider">
                       {log.plaka_no}
                     </span>
-                    <div className="flex flex-col text-xs text-slate-400">
+                    <div className="flex items-center gap-2 text-xs text-slate-400">
                       <span className="font-mono">{saat}</span>
                       <span className="font-mono">{gun}</span>
                     </div>
