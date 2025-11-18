@@ -101,16 +101,69 @@ async def add_blok(site_id: str, blok_input: BlokCreate):
 @router.put("/{site_id}/bloklar/{blok_id}", response_model=Blok)
 async def update_blok(site_id: str, blok_id: str, blok_input: BlokCreate):
     update_data = blok_input.model_dump()
-    result = await db.sites.update_one(
+    
+    # Mevcut bloğu bul
+    site = await db.sites.find_one({"id": site_id})
+    if not site:
+        raise HTTPException(status_code=404, detail="Site bulunamadı")
+    
+    blok_index = None
+    mevcut_blok = None
+    for i, blok in enumerate(site.get('bloklar', [])):
+        if blok['id'] == blok_id:
+            blok_index = i
+            mevcut_blok = blok
+            break
+    
+    if mevcut_blok is None:
+        raise HTTPException(status_code=404, detail="Blok bulunamadı")
+    
+    # Blok adı ve açıklama güncelle
+    await db.sites.update_one(
         {"id": site_id, "bloklar.id": blok_id},
         {"$set": {
             "bloklar.$.blok_adi": update_data['blok_adi'],
-            "bloklar.$.aciklama": update_data.get('aciklama')
+            "bloklar.$.aciklama": update_data.get('aciklama'),
+            "bloklar.$.daire_sayisi": update_data.get('daire_sayisi', 0)
         }}
     )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Blok bulunamadı")
     
+    # Daire sayısı değişikliğini kontrol et
+    yeni_daire_sayisi = update_data.get('daire_sayisi', 0)
+    mevcut_daireler = mevcut_blok.get('daireler', [])
+    mevcut_daire_sayisi = len(mevcut_daireler)
+    
+    if yeni_daire_sayisi > mevcut_daire_sayisi:
+        # Yeni daireler ekle
+        yeni_daireler = []
+        for i in range(mevcut_daire_sayisi + 1, yeni_daire_sayisi + 1):
+            daire = Daire(
+                daire_no=str(i),
+                isim_soyisim="Boş",
+                telefon="-",
+                not_=None
+            )
+            daire_doc = daire.model_dump()
+            daire_doc['olusturma_tarihi'] = daire_doc['olusturma_tarihi'].isoformat()
+            yeni_daireler.append(daire_doc)
+        
+        # Toplu olarak yeni daireleri ekle
+        await db.sites.update_one(
+            {"id": site_id},
+            {"$push": {f"bloklar.{blok_index}.daireler": {"$each": yeni_daireler}}}
+        )
+    elif yeni_daire_sayisi < mevcut_daire_sayisi:
+        # Daire sayısı azaltılıyor - fazla daireleri sil (sadece boş olanları)
+        # Son dairelerden başlayarak sil
+        for i in range(mevcut_daire_sayisi, yeni_daire_sayisi, -1):
+            daire_no = str(i)
+            # Sadece boş daireleri sil
+            await db.sites.update_one(
+                {"id": site_id},
+                {"$pull": {f"bloklar.{blok_index}.daireler": {"daire_no": daire_no, "isim_soyisim": "Boş"}}}
+            )
+    
+    # Güncellenmiş bloğu döndür
     site = await db.sites.find_one({"id": site_id})
     blok = next((b for b in site['bloklar'] if b['id'] == blok_id), None)
     if isinstance(blok.get('olusturma_tarihi'), str):
