@@ -104,17 +104,6 @@ const SiteManagement = () => {
     }
   };
 
-  const handleDeleteDaire = async (siteId, blokId, daireId) => {
-    if (!window.confirm('Daireyi silmek istediğinize emin misiniz?')) return;
-    try {
-      await axios.delete(`${API}/sites/${siteId}/bloklar/${blokId}/daireler/${daireId}`);
-      toast.success('Daire silindi');
-      fetchSites();
-    } catch (error) {
-      toast.error('Daire silinemedi');
-    }
-  };
-
   const handleEditSite = (site) => {
     setSelectedSite(site);
     setSiteForm({
@@ -343,24 +332,14 @@ const SiteManagement = () => {
                           </Button>
                         </div>
 
-                        {/* Daireler */}
+                        {/* Daireler - SİL BUTONU KALDIRILDI */}
                         {blok.daireler && blok.daireler.length > 0 ? (
                           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
                             {blok.daireler.map((daire) => (
                               <Card key={daire.id} className="bg-slate-900/50 border-slate-700 p-2">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1">
-                                    <Users className="w-3 h-3 text-slate-400" />
-                                    <span className="text-xs font-semibold text-white">{daire.daire_no}</span>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteDaire(site.id, blok.id, daire.id)}
-                                    className="text-red-400 hover:text-red-300 h-5 w-5 p-0"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
+                                <div className="flex items-center gap-1">
+                                  <Users className="w-3 h-3 text-slate-400" />
+                                  <span className="text-xs font-semibold text-white">{daire.daire_no}</span>
                                 </div>
                                 {daire.isim_soyisim && daire.isim_soyisim !== 'Boş' && (
                                   <p className="text-xs text-slate-400 mt-1 truncate">{daire.isim_soyisim}</p>
