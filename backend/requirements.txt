@@ -6,15 +6,15 @@ pydantic>=2.6.4
 python-multipart>=0.0.9
 aiohttp>=3.9.0
 
-# Plaka tanıma
-opencv-python>=4.9.0
-ultralytics>=8.1.0
-paddleocr>=2.7.0
-easyocr>=1.7.0
+# Plaka tanima - binary wheels (C++ derleyici gerektirmez)
+opencv-python==4.10.0.84
+ultralytics==8.2.0
+paddleocr==2.7.3
+easyocr==1.7.1
 pillow>=10.2.0
-numpy>=1.26.0
+numpy==1.26.4
 
-# PDF oluşturma
+# PDF olusturma
 reportlab>=4.0.0
 
 # Sistem izleme
