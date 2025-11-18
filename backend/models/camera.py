@@ -13,6 +13,9 @@ class Kamera(BaseModel):
     main_stream_url: Optional[str] = None
     sub_stream_url: Optional[str] = None
     
+    # WEBCAM için
+    webcam_index: Optional[int] = None  # 0, 1, 2, vs. - Birden fazla webcam desteği
+    
     # ONVIF için
     onvif_ip: Optional[str] = None
     onvif_port: int = 80
