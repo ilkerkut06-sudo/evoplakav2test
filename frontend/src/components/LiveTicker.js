@@ -49,7 +49,7 @@ const LiveTicker = ({ logs }) => {
     >
       <div className="p-3 bg-slate-900/50 border-b border-slate-700 flex items-center gap-2">
         <Activity className="w-4 h-4 text-sky-500 animate-pulse" />
-        <span className="text-sm font-semibold text-white">Canlı Akış (Son 6 Kayıt)</span>
+        <span className="text-sm font-semibold text-white">Canlı Akış (Son 3 Kayıt)</span>
       </div>
       
       <div className="divide-y divide-slate-700">
