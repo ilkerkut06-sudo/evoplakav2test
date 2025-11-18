@@ -425,3 +425,57 @@ agent_communication:
       Tüm plaka-daire senkronizasyon işlemleri mükemmel çalışıyor.
       
       📊 SONUÇ: PaddleOCR kaldırıldıktan sonra backend tamamen stabil ve fonksiyonel.
+---
+## 📅 18 Kasım 2025 - PaddleOCR Kaldırma ve Python 3.14 Uyumluluk
+
+- agent: "main"
+  message: |
+      🎯 PADDLEOCR KALDIRMA İŞLEMİ TAMAMLANDI - %100 BAŞARILI
+      
+      ✅ YAPILAN DEĞİŞİKLİKLER:
+      
+      1. Backend Paket Temizliği:
+         • paddleocr paketi kaldırıldı
+         • scikit-image paketi kaldırıldı (derleme hatası kaynağı)
+         • shapely paketi kaldırıldı
+         • Cloud ortamında pip uninstall ile temizlendi
+      
+      2. OCR Motor Değişikliği:
+         • Default OCR motor "paddleocr" -> "easyocr" olarak değiştirildi
+         • services/ocr_service.py güncellendi (fallback mekanizması eklendi)
+         • models/settings.py güncellendi
+         • routers/stream_router.py default ayarları güncellendi
+      
+      3. Kullanıcı Dokümantasyonu:
+         • /app/YEREL_KURULUM.md dosyası oluşturuldu
+         • Türkçe detaylı kurulum rehberi
+         • Sorun giderme adımları
+         • Python 3.14 uyumluluk notları
+      
+      4. Frontend .env Yapılandırması:
+         • /app/frontend/.env.local.example oluşturuldu
+         • Yerel kurulum için backend URL'i: http://localhost:8001
+      
+      📊 BACKEND TEST SONUÇLARI (testing agent):
+      • Sistem Ayarları Kontrolü: ✅ PASS (ocr_motor = easyocr)
+      • Site & Blok & Daire CRUD: ✅ PASS
+      • Plaka Oluşturma ve Senkronizasyon: ✅ PASS
+      • Plaka Taşıma ve Eski Daire Temizleme: ✅ PASS
+      • Cleanup: ✅ PASS
+      • TOPLAM: 13/13 test başarılı (%100)
+      
+      🔧 KULLANICI İÇİN ADIMLAR:
+      1. Mevcut backend/venv klasörünü silin
+      2. frontend/.env.local dosyası oluşturun (içerik: REACT_APP_BACKEND_URL=http://localhost:8001)
+      3. setup_and_start.bat dosyasını çalıştırın
+      4. MongoDB'nin çalıştığından emin olun
+      
+      📝 ÖNCEDEN VAR OLAN DÜZELTMELER (Önceki fork'tan):
+      • Plaka-Daire senkronizasyonu tamamen düzeltilmiş durumda
+      • Daire temizleme mantığı çalışıyor
+      • Site Yönetimi UI bug'ı için backend tarafı hazır
+      
+      ⚠️ USER VERIFICATION PENDING:
+      • Kullanıcının yerel ortamda kurulumu test etmesi gerekiyor
+      • Kurulum başarılı olduktan sonra uçtan uca test yapması gerekiyor
+      • GitHub push sorunu çözüldü (kullanıcı bilgisi)
