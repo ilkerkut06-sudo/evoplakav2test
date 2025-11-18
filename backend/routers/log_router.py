@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException, Query
-from motor.motor_asyncio import AsyncIOMotorClient
 from models.log import GecisLog, GecisLogCreate
 from typing import List, Optional
-import os
 from datetime import datetime, timezone, timedelta
 
 router = APIRouter(prefix="/logs", tags=["Geçiş Logları"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 @router.post("", response_model=GecisLog)
 async def create_log(log_input: GecisLogCreate):

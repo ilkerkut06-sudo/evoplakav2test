@@ -1,6 +1,4 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
 import logging
 import json
 import asyncio
@@ -13,9 +11,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/stream", tags=["Video Stream"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 # Aktif WebSocket bağlantıları
 active_connections = {}

@@ -1,14 +1,14 @@
 from fastapi import APIRouter, HTTPException
-from motor.motor_asyncio import AsyncIOMotorClient
 from models.settings import SistemAyarlari, SistemAyarlariUpdate
-import os
 from datetime import datetime
 
 router = APIRouter(prefix="/settings", tags=["Sistem Ayarları"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 @router.get("", response_model=SistemAyarlari)
 async def get_settings():

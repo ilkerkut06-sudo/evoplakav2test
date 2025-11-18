@@ -1,17 +1,17 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
-from motor.motor_asyncio import AsyncIOMotorClient
 from services.pdf_generator import PDFReportGenerator
 from typing import Optional
-import os
 from datetime import datetime
 import tempfile
 
 router = APIRouter(prefix="/reports", tags=["Raporlama"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 pdf_generator = PDFReportGenerator()
 

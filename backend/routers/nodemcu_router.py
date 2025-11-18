@@ -1,16 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from motor.motor_asyncio import AsyncIOMotorClient
 from models.nodemcu import NodeMCU, NodeMCUCreate, NodeMCUUpdate
 from services.nodemcu_controller import NodeMCUController
 from typing import List
-import os
 from datetime import datetime
 
 router = APIRouter(prefix="/nodemcu", tags=["NodeMCU/Kapı Yönetimi"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 controller = NodeMCUController()
 
