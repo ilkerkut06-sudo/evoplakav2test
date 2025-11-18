@@ -30,6 +30,18 @@ echo.
 
 echo [3/6] Creating backend virtual environment...
 cd /d "%~dp0backend"
+
+REM Create .env for backend if not exists
+if not exist ".env" (
+    echo Creating backend .env file...
+    (
+        echo MONGO_URL=mongodb://localhost:27017
+        echo DB_NAME=test_database
+        echo CORS_ORIGINS=*
+    ) > .env
+    echo Backend .env created
+)
+
 if not exist "venv" (
     py -m venv venv
     echo Virtual environment created
