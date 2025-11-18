@@ -26,5 +26,6 @@ class NodeMCUUpdate(BaseModel):
     nodemcu_id: Optional[str] = None
     ip_adres: Optional[str] = None
     kapi_adi: Optional[str] = None
+    endpoint_url: Optional[str] = None
     aciklama: Optional[str] = None
     aktif: Optional[bool] = None
