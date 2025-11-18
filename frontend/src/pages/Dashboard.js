@@ -49,7 +49,7 @@ const Dashboard = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await axios.get(`${API}/logs?limit=20`);
+      const response = await axios.get(`${API}/logs?limit=10`);
       setLogs(response.data);
     } catch (error) {
       console.error('Loglar alınamadı:', error);
