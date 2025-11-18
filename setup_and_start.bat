@@ -51,7 +51,15 @@ echo.
 echo [5/6] Installing frontend packages...
 cd /d "%~dp0frontend"
 if not exist "node_modules" (
-    npm install
+    echo Checking for Yarn...
+    where yarn >nul 2>&1
+    if errorlevel 1 (
+        echo Yarn not found, using npm with --legacy-peer-deps...
+        npm install --legacy-peer-deps
+    ) else (
+        echo Using Yarn...
+        yarn install
+    )
     if errorlevel 1 (
         echo [ERROR] Frontend packages installation failed!
         pause
