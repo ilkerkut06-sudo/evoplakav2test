@@ -116,6 +116,11 @@ async def check_plate(plate_no: str):
 
 @router.put("/{plate_id}", response_model=Plaka)
 async def update_plate(plate_id: str, plate_input: PlakaUpdate):
+    # Mevcut plaka bilgisini al
+    old_plate = await db.plates.find_one({"id": plate_id})
+    if not old_plate:
+        raise HTTPException(status_code=404, detail="Plaka bulunamadı")
+    
     update_data = {k: v for k, v in plate_input.model_dump().items() if v is not None}
     
     # Tarihleri ISO formatına çevir
@@ -124,6 +129,40 @@ async def update_plate(plate_id: str, plate_input: PlakaUpdate):
     if update_data.get('gecerlilik_bitis'):
         update_data['gecerlilik_bitis'] = update_data['gecerlilik_bitis'].isoformat()
     
+    # Eğer daire değiştiyse, eski daireyi temizle
+    if update_data.get('daire_id') and update_data['daire_id'] != old_plate.get('daire_id'):
+        old_daire_id = old_plate.get('daire_id')
+        old_site_id = old_plate.get('site_id')
+        old_blok_id = old_plate.get('blok_id')
+        
+        if old_daire_id and old_site_id and old_blok_id:
+            # Eski dairede başka plaka var mı kontrol et
+            other_plates_count = await db.plates.count_documents({
+                "daire_id": old_daire_id,
+                "id": {"$ne": plate_id}
+            })
+            
+            # Eski dairede başka plaka yoksa, daire bilgilerini temizle
+            if other_plates_count == 0:
+                site = await db.sites.find_one({"id": old_site_id})
+                if site:
+                    for i, blok in enumerate(site.get('bloklar', [])):
+                        if blok['id'] == old_blok_id:
+                            for j, daire in enumerate(blok.get('daireler', [])):
+                                if daire['id'] == old_daire_id:
+                                    # Eski daireyi temizle
+                                    await db.sites.update_one(
+                                        {"id": old_site_id},
+                                        {"$set": {
+                                            f"bloklar.{i}.daireler.{j}.isim_soyisim": "Boş",
+                                            f"bloklar.{i}.daireler.{j}.telefon": "-",
+                                            f"bloklar.{i}.daireler.{j}.not_": ""
+                                        }}
+                                    )
+                                    break
+                            break
+    
+    # Plakayı güncelle
     result = await db.plates.update_one(
         {"id": plate_id},
         {"$set": update_data}
