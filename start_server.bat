@@ -5,6 +5,20 @@ echo Starting License Plate Recognition System
 echo ================================================
 echo.
 
+REM Check and create backend .env if missing
+if not exist "backend\.env" (
+    echo [WARNING] backend\.env not found! Creating with defaults...
+    cd backend
+    (
+        echo MONGO_URL=mongodb://localhost:27017
+        echo DB_NAME=test_database
+        echo CORS_ORIGINS=*
+    ) > .env
+    cd ..
+    echo Backend .env created with default values.
+    echo.
+)
+
 echo Starting Backend on port 8001...
 start "Backend Server" cmd /k "cd /d %~dp0backend && call venv\Scripts\activate.bat && py -m uvicorn server:app --host 0.0.0.0 --port 8001 --reload"
 
