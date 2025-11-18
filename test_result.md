@@ -101,3 +101,117 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Plaka Tanıma + Site Yönetim Sistemi'nde kritik bug düzeltmeleri:
+  1. Site Yönetimi: Blok düzenleme fonksiyonu (blok adı ve daire sayısı)
+  2. Plaka Yönetimi: Cascading dropdown çökme düzeltmesi + plaka taşıma mantığı
+  3. Kamera Yönetimi: Select dropdown çökme düzeltmesi
+  4. Ayarlar Sayfası: OCR motor seçimi çökme düzeltmesi
+  5. Tüm Select componentlerinde boş value prop hatalarının düzeltilmesi
+
+backend:
+  - task: "Site Yönetimi - Blok Düzenleme API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routers/site_router.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Blok düzenleme endpoint'i güncellendi. Artık daire_sayisi değişikliği destekleniyor. Yeni daire eklenirse otomatik oluşturuluyor, azalırsa sadece boş daireler siliniyor."
+
+  - task: "Plaka Yönetimi - Plaka Taşıma Mantığı"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routers/plate_router.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Plaka düzenlenirken daire değişirse eski dairenin verisi temizleniyor."
+
+frontend:
+  - task: "Plaka Yönetimi - Cascading Dropdown Düzeltmesi"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/PlateManagement.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Select componentlerinde value prop undefined olduğunda boş string yerine undefined kullanılıyor. selectedSite, selectedBlok, selectedDaire scope sorunları çözüldü. Plaka taşıma mantığı eklendi."
+
+  - task: "Kamera Yönetimi - Select Dropdown Düzeltmesi"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/CameraManagement.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "bagli_kapi_id için 'none' default değeri eklendi. Select value prop'u düzeltildi. Boş liste durumu için fallback UI eklendi."
+
+  - task: "Ayarlar Sayfası - OCR Motor Seçimi Düzeltmesi"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Settings.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "OCR motor select'ine placeholder eklendi. value prop kontrolleri düzeltildi."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Site Yönetimi - Blok Düzenleme API"
+    - "Plaka Yönetimi - Plaka Taşıma Mantığı"
+    - "Plaka Yönetimi - Cascading Dropdown Düzeltmesi"
+    - "Kamera Yönetimi - Select Dropdown Düzeltmesi"
+    - "Ayarlar Sayfası - OCR Motor Seçimi Düzeltmesi"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Tüm kritik buglar düzeltildi. Backend ve frontend değişiklikleri tamamlandı.
+      
+      BACKEND Değişiklikleri:
+      1. site_router.py - update_blok endpoint'i güncellendi
+         - daire_sayisi artarsa yeni daireler otomatik oluşturuluyor
+         - daire_sayisi azalırsa sadece boş daireler siliniyor
+      
+      FRONTEND Değişiklikleri:
+      1. PlateManagement.js:
+         - Select value prop'ları undefined ile çalışıyor (boş string yerine)
+         - selectedSite, selectedBlok, selectedDaire scope sorunu çözüldü
+         - Plaka taşıma mantığı eklendi (eski daire temizleniyor)
+         - Boş liste durumları için fallback UI eklendi
+      
+      2. CameraManagement.js:
+         - bagli_kapi_id için 'none' default değeri
+         - Select value prop düzeltmesi
+         - Boş NodeMCU listesi için fallback UI
+      
+      3. Settings.js:
+         - OCR motor select'ine placeholder eklendi
+      
+      Backend testine başla ve tüm API endpoint'lerini doğrula.
