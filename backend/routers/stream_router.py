@@ -189,7 +189,7 @@ async def process_frame(camera_id: str, frame_data: dict):
                     if kapi:
                         from services.nodemcu_controller import NodeMCUController
                         controller = NodeMCUController()
-                        kapi_acildi_mi = await controller.open_door(kapi['ip_adres'], kapi['nodemcu_id'])
+                        kapi_acildi_mi = await controller.open_door(kapi['ip_adres'], kapi.get('endpoint_url', '/open'), kapi['nodemcu_id'])
             
             # Log kaydet
             from models.log import GecisLogCreate
