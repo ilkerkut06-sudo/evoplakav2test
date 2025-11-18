@@ -1,0 +1,83 @@
+<analysis>
+The user's primary language is Turkish. The next agent must respond in Turkish.
+
+The previous AI engineer was tasked with building a complex, full-stack License Plate Recognition + Site Management System from scratch for the Windows platform. The user provided a highly detailed specification document in Turkish. The tech stack is FastAPI (Python) for the backend, React for the frontend, and MongoDB for the database.
+
+The engineer's approach was to first scaffold the entire application structure. This involved creating BAT files for setup/execution, defining backend Pydantic models, and structuring the backend into modular services and routers. Subsequently, the frontend was built with React, creating pages for each major feature (Dashboard, Site Management, Camera Management, etc.) and a common layout.
+
+Development has been iterative, with the engineer building features and the user providing detailed feedback and bug reports. A recurring theme in the bug reports is frontend crashes related to React components, specifically  components (dropdowns) and a  error, indicating rendering issues. The user has also pointed out several logical flaws in the site and plate management workflows. The last action by the engineer was to acknowledge a comprehensive list of bugs provided by the user and begin a new bug-fixing cycle. The work is currently in a state where the core structure exists, but critical functionality is broken due to these bugs.
+</analysis>
+
+<product_requirements>
+The goal is to create a web-based, modular, and commercial-grade License Plate Recognition + Site Management System for Windows.
+
+**Core Features:**
+1.  **Architecture:** A FastAPI backend and a React frontend, deployable on Windows via  and  scripts.
+2.  **Camera System:** Support for RTSP IP cameras, browser Webcams via WebRTC, and ONVIF/PTZ controls.
+3.  **LPR Pipeline:** A multi-threaded pipeline using YOLOv8 for plate detection, OpenCV for image processing, and a choice between PaddleOCR/EasyOCR for character recognition.
+4.  **Site Management:** A hierarchical CRUD system for managing Sites, Blocks, Apartments, and up to 3 license plates per apartment.
+5.  **Door Control:** Integration with NodeMCU devices to trigger door relays upon successful plate recognition or manual action.
+6.  **Reporting:** Detailed logs and statistics with filtering capabilities and PDF export (with Turkish character support).
+7.  **Dashboard:** A modern, dark-themed, responsive UI featuring a customizable camera grid, a live log panel, and summary statistics.
+8.  **User Roles:** Admin, Security, and Resident roles with different permissions.
+9.  **Visitor Management:** A system for adding temporary visitor plates with an expiration time.
+
+The system is currently in a bug-fixing phase, with the user reporting multiple crashes and logical errors in the implemented management pages.
+</product_requirements>
+
+<key_technical_concepts>
+- **Backend:** FastAPI, Pydantic, Motor (async MongoDB driver)
+- **Frontend:** React, 
+- **Database:** MongoDB
+- **AI/ML:** YOLOv8, OpenCV, PaddleOCR, EasyOCR
+- **Real-time Video:** WebRTC, RTSP
+- **Hardware Integration:** NodeMCU (via HTTP requests)
+- **Deployment:** Windows-specific BAT scripts ()
+- **UI:** Shadcn-like components, dark theme
+</key_technical_concepts>
+
+<code_architecture>
+The project is structured as a standard monorepo with separate  and  directories.
+
+
+
+- ****
+  - **Importance:** The main entry point for the FastAPI application. It initializes the database connection, mounts all the routers, and configures CORS.
+  - **Changes:** Updated to pass the database instance to the routers to avoid global variables and ensure a single connection pool is used.
+
+- ****
+  - **Importance:** This page handles the core logic for creating and managing sites, blocks, and apartments. It's fundamental to the application's data structure.
+  - **Changes:** It was rewritten multiple times to fix bugs and align with user's logic requests. The last change added a Number of Apartments field when creating a block, but the user reported an Edit Block functionality is still missing.
+
+- ****
+  - **Importance:** Manages the CRUD operations for license plates and links them to specific sites, blocks, and apartments.
+  - **Changes:** Completely rewritten to implement a cascading dropdown logic (Site -> Block -> Apartment) for plate assignment. However, the user reports this new implementation is crashing.
+
+- ** & **
+  - **Importance:** These pages handle camera configuration and report generation, respectively.
+  - **Changes:** Both were edited to fix a recurring crash: . This involved ensuring that the options passed to the  component always had a non-empty . Despite the fix, the user reports these pages are still crashing on selection.
+</code_architecture>
+
+<pending_tasks>
+The following critical bugs and feature requests from the user are pending:
+1.  **Site Management:** Add an Edit Block button to modify the block name and number of apartments after creation.
+2.  **Plate Management:** Fix the crash that occurs when selecting a site or block. Fix the logic to correctly handle moving a plate to a new apartment, ensuring old data is cleaned up.
+3.  **Camera Management:** Fix the crash that occurs when selecting Camera Type or Connected Door in the add/edit form.
+4.  **Settings Page:** Fix the crash when selecting an OCR/YOLO engine.
+</pending_tasks>
+
+<current_work>
+The immediate last task was a major, multi-file bug-fixing session aimed at resolving a comprehensive list of issues reported by the user in message #163. The AI acknowledged all reported issues, which include:
+
+-   **Logical Flaws:** Missing Edit Block functionality in Site Management and incorrect data handling when a license plate's assigned apartment is changed.
+-   **Critical Crashes:** The application crashes in several key areas:
+    -   **Plate Management:** When using the new cascaded dropdowns for site/block selection.
+    -   **Camera Management:** When selecting options in the add/edit camera form.
+    -   **Settings Page:** When changing the OCR/YOLO engine.
+
+The user provided runtime error messages, pointing to  and  value prop errors. The AI had just begun addressing these issues by stating, Tüm hataları tek seferde düzeltiyorum: (I am fixing all the errors at once:), but the trajectory ends before any code modifications for this specific batch of fixes were made. The system is in a non-functional state for several key management pages due to these crashes.
+</current_work>
+
+<optional_next_step>
+Tüm hataları tek seferde düzeltmeye başlayacağım. İlk olarak, en temel mantık hatası olan Site Yönetimi'ndeki eksik Blok Düzenle işlevini ekleyeceğim.
+</optional_next_step>
