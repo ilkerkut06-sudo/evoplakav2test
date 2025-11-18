@@ -54,22 +54,27 @@ const PlateManagement = () => {
     }
   };
 
+  // Seçili site, blok ve daireyi hesapla
+  const selectedSite = sites.find(s => s.id === formData.site_id) || null;
+  const selectedBlok = selectedSite?.bloklar?.find(b => b.id === formData.blok_id) || null;
+  const selectedDaire = selectedBlok?.daireler?.find(d => d.id === formData.daire_id) || null;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Daire bilgilerini güncelle
     try {
       await axios.put(`${API}/sites/${formData.site_id}/bloklar/${formData.blok_id}/daireler/${formData.daire_id}`, {
-        daire_no: selectedDaire?.daire_no,
+        daire_no: selectedDaire?.daire_no || '',
         isim_soyisim: formData.isim_soyisim,
         telefon: formData.telefon,
         not_: formData.not_
       });
     } catch (error) {
-      console.error('Daire güncellenemedi');
+      console.error('Daire güncellenemedi:', error);
     }
 
-    // Plaka ekle
+    // Plaka ekle/güncelle
     try {
       const plakaData = {
         plaka_no: formData.plaka_no,
@@ -81,7 +86,31 @@ const PlateManagement = () => {
         not_: formData.not_
       };
 
-      if (editMode) {
+      if (editMode && currentPlate) {
+        // Plaka taşınıyorsa eski dairenin plakasını kaldır
+        if (currentPlate.daire_id !== formData.daire_id) {
+          try {
+            const eskiSite = sites.find(s => s.id === currentPlate.site_id);
+            const eskiBlok = eskiSite?.bloklar?.find(b => b.id === currentPlate.blok_id);
+            const eskiDaire = eskiBlok?.daireler?.find(d => d.id === currentPlate.daire_id);
+            
+            if (eskiDaire) {
+              // Eski dairedeki plaka referansını temizle
+              await axios.put(
+                `${API}/sites/${currentPlate.site_id}/bloklar/${currentPlate.blok_id}/daireler/${currentPlate.daire_id}`,
+                {
+                  daire_no: eskiDaire.daire_no,
+                  isim_soyisim: eskiDaire.isim_soyisim,
+                  telefon: eskiDaire.telefon,
+                  not_: eskiDaire.not_
+                }
+              );
+            }
+          } catch (error) {
+            console.error('Eski daire temizlenemedi:', error);
+          }
+        }
+        
         await axios.put(`${API}/plates/${currentPlate.id}`, plakaData);
         toast.success('Plaka güncellendi');
       } else {
@@ -103,6 +132,7 @@ const PlateManagement = () => {
       await axios.delete(`${API}/plates/${id}`);
       toast.success('Plaka silindi');
       fetchPlates();
+      fetchSites();
     } catch (error) {
       toast.error('Plaka silinemedi');
     }
@@ -115,14 +145,14 @@ const PlateManagement = () => {
 
     setCurrentPlate(plate);
     setFormData({
-      site_id: plate.site_id,
-      blok_id: plate.blok_id,
-      daire_id: plate.daire_id,
-      plaka_no: plate.plaka_no,
+      site_id: plate.site_id || '',
+      blok_id: plate.blok_id || '',
+      daire_id: plate.daire_id || '',
+      plaka_no: plate.plaka_no || '',
       isim_soyisim: daire?.isim_soyisim || '',
       telefon: daire?.telefon || '',
       arac_tipi: plate.arac_tipi || 'Sedan',
-      durum: plate.durum,
+      durum: plate.durum || 'Tanımlı',
       not_: plate.not_ || '',
     });
     setEditMode(true);
@@ -154,11 +184,7 @@ const PlateManagement = () => {
     return <Badge className={colors[durum] || colors['Tanımlı']}>{durum}</Badge>;
   };
 
-  const selectedSite = sites.find(s => s.id === formData.site_id) || null;
-  const selectedBlok = selectedSite?.bloklar?.find(b => b.id === formData.blok_id) || null;
-  const selectedDaire = selectedBlok?.daireler?.find(d => d.id === formData.daire_id) || null;
-
-  // Daire seçildiğinde bilgileri doldur
+  // Daire seçildiğinde bilgileri doldur (sadece yeni ekleme modunda)
   useEffect(() => {
     if (selectedDaire && !editMode) {
       setFormData(prev => ({
@@ -167,7 +193,7 @@ const PlateManagement = () => {
         telefon: selectedDaire.telefon === '-' ? '' : selectedDaire.telefon,
       }));
     }
-  }, [formData.daire_id, editMode]);
+  }, [formData.daire_id, editMode, selectedDaire]);
 
   const filteredPlates = plates.filter(plate => 
     plate.plaka_no.toLowerCase().includes(searchTerm.toLowerCase())
@@ -197,14 +223,21 @@ const PlateManagement = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label className="text-slate-300">Site *</Label>
-                <Select required value={formData.site_id} onValueChange={(v) => setFormData({ ...formData, site_id: v, blok_id: '', daire_id: '' })}>
+                <Select 
+                  value={formData.site_id || undefined} 
+                  onValueChange={(v) => setFormData({ ...formData, site_id: v, blok_id: '', daire_id: '' })}
+                >
                   <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                     <SelectValue placeholder="Site seçin" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700">
-                    {sites.map(site => (
-                      <SelectItem key={site.id} value={site.id}>{site.site_adi}</SelectItem>
-                    ))}
+                    {sites.length > 0 ? (
+                      sites.map(site => (
+                        <SelectItem key={site.id} value={site.id}>{site.site_adi}</SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-slate-400 text-sm">Site bulunamadı</div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -212,7 +245,10 @@ const PlateManagement = () => {
               {formData.site_id && selectedSite && (
                 <div>
                   <Label className="text-slate-300">Blok *</Label>
-                  <Select required value={formData.blok_id} onValueChange={(v) => setFormData({ ...formData, blok_id: v, daire_id: '' })}>
+                  <Select 
+                    value={formData.blok_id || undefined} 
+                    onValueChange={(v) => setFormData({ ...formData, blok_id: v, daire_id: '' })}
+                  >
                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                       <SelectValue placeholder="Blok seçin" />
                     </SelectTrigger>
@@ -222,7 +258,7 @@ const PlateManagement = () => {
                           <SelectItem key={blok.id} value={blok.id}>Blok {blok.blok_adi}</SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="no-blok" disabled>Bu sitede blok yok</SelectItem>
+                        <div className="p-2 text-slate-400 text-sm">Bu sitede blok yok</div>
                       )}
                     </SelectContent>
                   </Select>
@@ -232,7 +268,10 @@ const PlateManagement = () => {
               {formData.blok_id && selectedBlok && (
                 <div>
                   <Label className="text-slate-300">Daire No *</Label>
-                  <Select required value={formData.daire_id} onValueChange={(v) => setFormData({ ...formData, daire_id: v })}>
+                  <Select 
+                    value={formData.daire_id || undefined} 
+                    onValueChange={(v) => setFormData({ ...formData, daire_id: v })}
+                  >
                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                       <SelectValue placeholder="Daire seçin" />
                     </SelectTrigger>
@@ -244,7 +283,7 @@ const PlateManagement = () => {
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="no-daire" disabled>Bu blokta daire yok</SelectItem>
+                        <div className="p-2 text-slate-400 text-sm">Bu blokta daire yok</div>
                       )}
                     </SelectContent>
                   </Select>

@@ -60,11 +60,17 @@ const CameraManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // bagli_kapi_id'yi temizle
+      const submitData = {
+        ...formData,
+        bagli_kapi_id: formData.bagli_kapi_id === 'none' || formData.bagli_kapi_id === '' ? '' : formData.bagli_kapi_id
+      };
+      
       if (editMode) {
-        await axios.put(`${API}/cameras/${currentCamera.id}`, formData);
+        await axios.put(`${API}/cameras/${currentCamera.id}`, submitData);
         toast.success('Kamera güncellendi');
       } else {
-        await axios.post(`${API}/cameras`, formData);
+        await axios.post(`${API}/cameras`, submitData);
         toast.success('Kamera eklendi');
       }
       setOpen(false);
@@ -88,7 +94,10 @@ const CameraManagement = () => {
 
   const handleEdit = (camera) => {
     setCurrentCamera(camera);
-    setFormData({ ...camera });
+    setFormData({ 
+      ...camera,
+      bagli_kapi_id: camera.bagli_kapi_id || 'none'
+    });
     setEditMode(true);
     setOpen(true);
   };
@@ -104,7 +113,7 @@ const CameraManagement = () => {
       onvif_port: 80,
       onvif_kullanici: '',
       onvif_sifre: '',
-      bagli_kapi_id: '',
+      bagli_kapi_id: 'none',
       aktif: true,
       plaka_tanima_aktif: true,
     });
@@ -239,15 +248,22 @@ const CameraManagement = () => {
 
               <div>
                 <Label className="text-slate-300">Bağlı Kapı (Opsiyonel)</Label>
-                <Select value={formData.bagli_kapi_id || 'none'} onValueChange={(v) => setFormData({ ...formData, bagli_kapi_id: v === 'none' ? '' : v })}>
+                <Select 
+                  value={formData.bagli_kapi_id || 'none'} 
+                  onValueChange={(v) => setFormData({ ...formData, bagli_kapi_id: v })}
+                >
                   <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                     <SelectValue placeholder="Kapı seçin" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700">
                     <SelectItem value="none">Kapı yok</SelectItem>
-                    {nodemcus.map(node => (
-                      <SelectItem key={node.id} value={node.id}>{node.kapi_adi}</SelectItem>
-                    ))}
+                    {nodemcus.length > 0 ? (
+                      nodemcus.map(node => (
+                        <SelectItem key={node.id} value={node.id}>{node.kapi_adi}</SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-slate-400 text-sm">NodeMCU bulunamadı</div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

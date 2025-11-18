@@ -62,7 +62,7 @@ const Settings = () => {
                 onValueChange={(value) => setSettings({ ...settings, ocr_motor: value })}
               >
                 <SelectTrigger className="bg-slate-900 border-slate-700 text-white" data-testid="ocr-engine-select">
-                  <SelectValue />
+                  <SelectValue placeholder="OCR motor seçin" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 border-slate-700">
                   <SelectItem value="paddleocr">PaddleOCR (Hızlı)</SelectItem>
