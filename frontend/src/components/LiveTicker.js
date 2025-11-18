@@ -6,8 +6,8 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
 const LiveTicker = ({ logs }) => {
-  // Son 6 kaydı al ve yeni tarihten eskiye sırala
-  const recentLogs = logs ? logs.slice(0, 6) : [];
+  // Son 3 kaydı al ve yeni tarihten eskiye sırala
+  const recentLogs = logs ? logs.slice(0, 3) : [];
 
   const getDurumBadge = (durum) => {
     switch (durum) {
