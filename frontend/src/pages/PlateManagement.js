@@ -87,7 +87,7 @@ const PlateManagement = () => {
       };
 
       if (editMode && currentPlate) {
-        // Plaka taşınıyorsa eski dairenin plakasını kaldır
+        // Plaka taşınıyorsa eski dairenin bilgilerini temizle
         if (currentPlate.daire_id !== formData.daire_id) {
           try {
             const eskiSite = sites.find(s => s.id === currentPlate.site_id);
@@ -95,24 +95,26 @@ const PlateManagement = () => {
             const eskiDaire = eskiBlok?.daireler?.find(d => d.id === currentPlate.daire_id);
             
             if (eskiDaire) {
-              // Eski dairedeki plaka referansını temizle
+              // ESKİ DAİREYİ TEMİZLE - İsim ve telefonu "Boş" ve "-" yap
               await axios.put(
                 `${API}/sites/${currentPlate.site_id}/bloklar/${currentPlate.blok_id}/daireler/${currentPlate.daire_id}`,
                 {
                   daire_no: eskiDaire.daire_no,
-                  isim_soyisim: eskiDaire.isim_soyisim,
-                  telefon: eskiDaire.telefon,
-                  not_: eskiDaire.not_
+                  isim_soyisim: 'Boş',
+                  telefon: '-',
+                  not_: ''
                 }
               );
+              console.log('✓ Eski daire temizlendi:', eskiDaire.daire_no);
             }
           } catch (error) {
-            console.error('Eski daire temizlenemedi:', error);
+            console.error('✗ Eski daire temizlenemedi:', error);
+            toast.error('Eski daire temizlenemedi!');
           }
         }
         
         await axios.put(`${API}/plates/${currentPlate.id}`, plakaData);
-        toast.success('Plaka güncellendi');
+        toast.success('Plaka güncellendi ve eski daire temizlendi');
       } else {
         await axios.post(`${API}/plates`, plakaData);
         toast.success('Plaka eklendi');
