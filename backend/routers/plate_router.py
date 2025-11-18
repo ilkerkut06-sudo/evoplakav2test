@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException
-from motor.motor_asyncio import AsyncIOMotorClient
 from models.plate import Plaka, PlakaCreate, PlakaUpdate
 from typing import List, Optional
-import os
 from datetime import datetime, timezone
 
 router = APIRouter(prefix="/plates", tags=["Plaka Yönetimi"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 @router.post("", response_model=Plaka)
 async def create_plate(plate_input: PlakaCreate):

@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException
-from motor.motor_asyncio import AsyncIOMotorClient
 from models.camera import Kamera, KameraCreate, KameraUpdate
 from typing import List
-import os
 from datetime import datetime
 
 router = APIRouter(prefix="/cameras", tags=["Kamera Yönetimi"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = None
+
+def set_db(database):
+    global db
+    db = database
 
 @router.post("", response_model=Kamera)
 async def create_camera(camera_input: KameraCreate):
