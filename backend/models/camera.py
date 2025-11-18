@@ -51,6 +51,7 @@ class KameraUpdate(BaseModel):
     giris_cikis: Optional[str] = None
     main_stream_url: Optional[str] = None
     sub_stream_url: Optional[str] = None
+    webcam_index: Optional[int] = None
     onvif_ip: Optional[str] = None
     onvif_port: Optional[int] = None
     onvif_kullanici: Optional[str] = None
