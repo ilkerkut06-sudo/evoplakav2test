@@ -1,51 +1,91 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/card';
-import { Activity } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Activity, CheckCircle, AlertTriangle, Ban, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
 const LiveTicker = ({ logs }) => {
-  const [tickerText, setTickerText] = useState('');
+  // Son 6 kaydı al ve yeni tarihten eskiye sırala
+  const recentLogs = logs ? logs.slice(0, 6) : [];
 
-  useEffect(() => {
-    if (logs && logs.length > 0) {
-      const latest = logs.slice(0, 5);
-      const text = latest
-        .map((log) => {
-          const time = format(new Date(log.tarih), 'HH:mm', { locale: tr });
-          const status = getDurumText(log.durum);
-          return `${time} - ${log.plaka_no} - ${status} - ${log.kamera_adi}`;
-        })
-        .join('  •  ');
-      setTickerText(text);
+  const getDurumBadge = (durum) => {
+    switch (durum) {
+      case 'Tanımlı':
+        return (
+          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 flex items-center gap-1">
+            <CheckCircle className="w-3 h-3" />
+            KAYITLI ARAÇ
+          </Badge>
+        );
+      case 'Misafir':
+        return (
+          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 flex items-center gap-1">
+            <User className="w-3 h-3" />
+            MİSAFİR ARAÇ
+          </Badge>
+        );
+      case 'Yasaklı':
+        return (
+          <Badge className="bg-red-500/20 text-red-400 border-red-500/30 flex items-center gap-1">
+            <Ban className="w-3 h-3" />
+            YASAKLI ARAÇ
+          </Badge>
+        );
+      default:
+        return (
+          <Badge className="bg-slate-500/20 text-slate-400 border-slate-500/30 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            TANıMSız ARAÇ
+          </Badge>
+        );
     }
-  }, [logs]);
-
-  const getDurumText = (durum) => {
-    const map = {
-      'Tanımlı': 'Tanımlı Araç',
-      'Misafir': 'Misafir Araç',
-      'Tanımsız': 'Tanımsız Araç',
-      'Yasaklı': '⚠️ Yasaklı Araç Denemesi',
-    };
-    return map[durum] || durum;
   };
 
   return (
     <Card 
-      className="bg-slate-800/50 border-slate-700 backdrop-blur-sm overflow-hidden"
+      className="bg-slate-800/50 border-slate-700 backdrop-blur-sm"
       data-testid="live-ticker"
     >
       <div className="p-3 bg-slate-900/50 border-b border-slate-700 flex items-center gap-2">
-        <Activity className="w-4 h-4 text-sky-500" />
-        <span className="text-sm font-semibold text-white">Canlı Akış</span>
+        <Activity className="w-4 h-4 text-sky-500 animate-pulse" />
+        <span className="text-sm font-semibold text-white">Canlı Akış (Son 6 Kayıt)</span>
       </div>
-      <div className="relative overflow-hidden h-10 flex items-center bg-slate-900/30">
-        <div className="ticker-wrapper">
-          <div className="ticker-content text-slate-300 text-sm whitespace-nowrap">
-            {tickerText || 'Henüz geçiş kaydı yok...'}
+      
+      <div className="divide-y divide-slate-700">
+        {recentLogs.length === 0 ? (
+          <div className="p-4 text-center text-slate-400 text-sm">
+            Henüz geçiş kaydı yok...
           </div>
-        </div>
+        ) : (
+          recentLogs.map((log, index) => {
+            const tarih = new Date(log.tarih);
+            const saat = format(tarih, 'HH:mm:ss', { locale: tr });
+            const gun = format(tarih, 'dd.MM.yyyy', { locale: tr });
+            
+            return (
+              <div 
+                key={log.id || index} 
+                className="p-3 hover:bg-slate-900/30 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <span className="font-bold text-white text-lg tracking-wider">
+                      {log.plaka_no}
+                    </span>
+                    <div className="flex flex-col text-xs text-slate-400">
+                      <span className="font-mono">{saat}</span>
+                      <span className="font-mono">{gun}</span>
+                    </div>
+                  </div>
+                  <div>
+                    {getDurumBadge(log.durum)}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </Card>
   );
