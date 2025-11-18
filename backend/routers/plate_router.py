@@ -190,6 +190,10 @@ async def update_plate(plate_id: str, plate_input: PlakaUpdate):
                                     break
                             break
     
+    # İsim ve telefon bilgilerini al (yeni daire senkronizasyonu için)
+    isim_soyisim = update_data.pop('isim_soyisim', None)
+    telefon = update_data.pop('telefon', None)
+    
     # Plakayı güncelle
     result = await db.plates.update_one(
         {"id": plate_id},
@@ -198,6 +202,28 @@ async def update_plate(plate_id: str, plate_input: PlakaUpdate):
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Plaka bulunamadı")
+    
+    # YENİ DAİREYİ GÜNCELLE (Site Yönetimi ekranında gözükecek)
+    if isim_soyisim and telefon:
+        new_site_id = update_data.get('site_id', old_plate.get('site_id'))
+        new_blok_id = update_data.get('blok_id', old_plate.get('blok_id'))
+        new_daire_id = update_data.get('daire_id', old_plate.get('daire_id'))
+        
+        site = await db.sites.find_one({"id": new_site_id})
+        if site:
+            for i, blok in enumerate(site.get('bloklar', [])):
+                if blok['id'] == new_blok_id:
+                    for j, daire in enumerate(blok.get('daireler', [])):
+                        if daire['id'] == new_daire_id:
+                            await db.sites.update_one(
+                                {"id": new_site_id},
+                                {"$set": {
+                                    f"bloklar.{i}.daireler.{j}.isim_soyisim": isim_soyisim,
+                                    f"bloklar.{i}.daireler.{j}.telefon": telefon
+                                }}
+                            )
+                            break
+                    break
     
     return await get_plate(plate_id)
 
