@@ -131,7 +131,7 @@ async def process_frame(camera_id: str, frame_data: dict):
     # Sistem ayarları
     settings = await db.settings.find_one({"id": "sistem_ayarlari"})
     if not settings:
-        settings = {"ocr_motor": "paddleocr", "ai_duzeltme_aktif": True, "yolo_confidence": 0.5}
+        settings = {"ocr_motor": "easyocr", "ai_duzeltme_aktif": True, "yolo_confidence": 0.5}
     
     # Servisler
     ocr_service = OCRService(engine=settings['ocr_motor'])
