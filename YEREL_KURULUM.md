@@ -8,8 +8,15 @@
 
 ## 📋 Gereksinimler
 
-1. **Python 3.10 - 3.14** (Kurulu olanı kontrol: `py --version`)
+1. **Python 3.12 veya 3.13** ⚠️ ZORUNLU
+   - Python 3.14 AI/ML paketleriyle uyumlu değil
+   - Python 3.11 ve altı bazı paketler için eski
+   - **Önerilen:** Python 3.12.x (En stabil)
+   - İndir: https://www.python.org/downloads/
+   - Kurulu olanı kontrol: `py --version`
+   
 2. **Node.js 16+** (Kurulu olanı kontrol: `node --version`)
+
 3. **MongoDB Community Edition**
    - İndir: https://www.mongodb.com/try/download/community
    - Kurulum sonrası MongoDB servisinin çalıştığından emin olun
