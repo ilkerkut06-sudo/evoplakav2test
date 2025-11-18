@@ -285,7 +285,7 @@ class BackendTester:
             "aktif": True
         }
         
-        success, response = await self make_request("PUT", f"/cameras/{self.test_data['kamera_id']}", kamera_update_data)
+        success, response = await self.make_request("PUT", f"/cameras/{self.test_data['kamera_id']}", kamera_update_data)
         if success and response.get('kamera_adi') == "Ana Giriş Kamerası - Güncellendi":
             self.log_result("Kamera Düzenleme", True, "Kamera başarıyla güncellendi")
         else:
