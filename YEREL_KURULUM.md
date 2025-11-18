@@ -128,6 +128,13 @@ Tarayıcınızda otomatik açılacak:
 1. `backend/venv` klasörünü silin
 2. `setup_and_start.bat` dosyasını yeniden çalıştırın
 
+### Hata: Frontend dependency conflict (date-fns)
+**Sebep:** npm peer dependency uyarısı
+**Çözüm:**
+1. Script otomatik olarak `--legacy-peer-deps` kullanır
+2. Veya Yarn kurun: `npm install -g yarn`
+3. `frontend/node_modules` klasörünü silin ve tekrar deneyin
+
 ---
 
 ## 📦 Değişiklikler (v1.1)
