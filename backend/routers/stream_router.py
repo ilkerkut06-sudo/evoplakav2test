@@ -126,11 +126,13 @@ async def video_stream(camera_id: str):
 @router.websocket("/ws/{camera_id}")
 async def websocket_endpoint(websocket: WebSocket, camera_id: str):
     """
-    WebSocket endpoint for camera streaming
-    Backend reads from camera and sends frames to client
+    WebRTC WebSocket endpoint
+    Client sends frames, backend processes with YOLO/OCR
     """
+    from services.plate_detection import PlateDetector
+    from services.ocr_service import OCRService
+    
     await manager.connect(websocket, camera_id)
-    cap = None
     
     try:
         # Kamera bilgisini al
@@ -139,69 +141,74 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: str):
             await websocket.send_json({"error": "Kamera bulunamadı"})
             return
         
-        camera_type = camera.get('kamera_tipi', '').upper()
+        # Sistem ayarları
+        settings = await db.settings.find_one({"id": "sistem_ayarlari"})
+        if not settings:
+            settings = {"ocr_motor": "easyocr", "yolo_confidence": 0.5}
         
-        # Kamerayı aç
-        if camera_type == 'WEBCAM':
-            webcam_index = camera.get('webcam_index', 0)
-            cap = cv2.VideoCapture(webcam_index)
-            logger.info(f"Webcam {webcam_index} açıldı")
-        elif camera_type == 'RTSP':
-            rtsp_url = camera.get('main_stream_url')
-            if not rtsp_url:
-                await websocket.send_json({"error": "RTSP URL tanımlanmamış"})
-                return
-            cap = cv2.VideoCapture(rtsp_url)
-            logger.info(f"RTSP stream açıldı: {rtsp_url}")
-        else:
-            await websocket.send_json({"error": f"Desteklenmeyen kamera tipi: {camera_type}"})
-            return
+        # YOLO ve OCR başlat
+        detector = PlateDetector(confidence=settings.get('yolo_confidence', 0.5))
+        ocr_service = OCRService(engine=settings.get('ocr_motor', 'easyocr'))
         
-        if not cap or not cap.isOpened():
-            await websocket.send_json({"error": "Kamera açılamadı"})
-            return
+        logger.info(f"WebRTC WebSocket başlatıldı: {camera_id}")
         
-        # Frame gönderme döngüsü
+        # Frame alma döngüsü
         while True:
-            ret, frame = cap.read()
+            # Client'tan frame al (binary data)
+            frame_data = await websocket.receive_bytes()
             
-            if not ret:
-                logger.warning(f"Frame okunamadı: {camera_id}")
-                await asyncio.sleep(0.1)
+            # Numpy array'e çevir
+            nparr = np.frombuffer(frame_data, np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            
+            if frame is None:
                 continue
             
-            # Frame'i küçült (performans için)
-            frame = cv2.resize(frame, (640, 480))
+            # YOLO ile plaka tespit et
+            detections = detector.detect_plates(frame)
             
-            # JPEG encode
-            ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
-            if not ret:
-                continue
+            results = []
+            for detection in detections:
+                x1, y1, x2, y2, conf = detection
+                
+                # Plaka bölgesini kes
+                plate_img = frame[int(y1):int(y2), int(x1):int(x2)]
+                
+                # OCR ile plaka oku
+                plate_text, ocr_conf = ocr_service.read_plate(plate_img)
+                
+                if plate_text:
+                    results.append({
+                        "plate": plate_text,
+                        "confidence": float(conf),
+                        "ocr_confidence": float(ocr_conf),
+                        "bbox": [int(x1), int(y1), int(x2), int(y2)]
+                    })
+                    
+                    # Database'e log kaydet
+                    await db.logs.insert_one({
+                        "id": str(uuid4()),
+                        "plaka_no": plate_text,
+                        "camera_id": camera_id,
+                        "timestamp": datetime.now(timezone.utc),
+                        "confidence": float(conf),
+                        "durum": "Tanımlı"  # Plaka kontrolü yapılabilir
+                    })
             
-            # Base64 encode
-            frame_base64 = base64.b64encode(buffer).decode('utf-8')
-            
-            # WebSocket'e gönder
-            await websocket.send_json({
-                "type": "frame",
-                "data": f"data:image/jpeg;base64,{frame_base64}",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "camera_id": camera_id
-            })
-            
-            # FPS kontrolü (25 FPS)
-            await asyncio.sleep(0.04)
+            # Sonuçları gönder
+            if results:
+                await websocket.send_json({
+                    "type": "detection",
+                    "detections": results,
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                })
     
     except WebSocketDisconnect:
         logger.info(f"WebSocket bağlantısı kesildi: {camera_id}")
         manager.disconnect(websocket, camera_id)
     except Exception as e:
-        logger.error(f"WebSocket hatası: {e}")
+        logger.error(f"WebSocket hatası: {e}", exc_info=True)
         manager.disconnect(websocket, camera_id)
-    finally:
-        if cap:
-            cap.release()
-            logger.info(f"Kamera kapatıldı: {camera_id}")
 
 @router.post("/rtsp/start/{camera_id}")
 async def start_rtsp_stream(camera_id: str):
