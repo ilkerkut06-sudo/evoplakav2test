@@ -49,6 +49,79 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+@router.get("/{camera_id}")
+async def video_stream(camera_id: str):
+    """
+    MJPEG video stream endpoint
+    Returns real-time video from webcam or RTSP camera
+    """
+    async def generate_frames():
+        cap = None
+        try:
+            # Kamera bilgisini al
+            camera = await db.cameras.find_one({"id": camera_id})
+            if not camera:
+                logger.error(f"Kamera bulunamadı: {camera_id}")
+                return
+            
+            camera_type = camera.get('kamera_tipi', '').upper()
+            
+            # Kamerayı aç
+            if camera_type == 'WEBCAM':
+                webcam_index = camera.get('webcam_index', 0)
+                cap = cv2.VideoCapture(webcam_index)
+                logger.info(f"MJPEG Stream: Webcam {webcam_index} açıldı")
+            elif camera_type == 'RTSP':
+                rtsp_url = camera.get('main_stream_url')
+                if not rtsp_url:
+                    logger.error("RTSP URL tanımlanmamış")
+                    return
+                cap = cv2.VideoCapture(rtsp_url)
+                logger.info(f"MJPEG Stream: RTSP açıldı - {rtsp_url}")
+            else:
+                logger.error(f"Desteklenmeyen kamera tipi: {camera_type}")
+                return
+            
+            if not cap or not cap.isOpened():
+                logger.error(f"Kamera açılamadı: {camera_id}")
+                return
+            
+            # MJPEG stream döngüsü
+            while True:
+                ret, frame = cap.read()
+                
+                if not ret:
+                    logger.warning(f"Frame okunamadı: {camera_id}")
+                    await asyncio.sleep(0.1)
+                    continue
+                
+                # Frame'i küçült (performans)
+                frame = cv2.resize(frame, (640, 480))
+                
+                # JPEG encode
+                ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                if not ret:
+                    continue
+                
+                # MJPEG format
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+                
+                # FPS kontrolü (~30 FPS)
+                await asyncio.sleep(0.033)
+        
+        except Exception as e:
+            logger.error(f"MJPEG stream hatası: {e}")
+        finally:
+            if cap:
+                cap.release()
+                logger.info(f"MJPEG Stream kapatıldı: {camera_id}")
+    
+    return StreamingResponse(
+        generate_frames(),
+        media_type="multipart/x-mixed-replace; boundary=frame"
+    )
+
 @router.websocket("/ws/{camera_id}")
 async def websocket_endpoint(websocket: WebSocket, camera_id: str):
     """
