@@ -90,21 +90,27 @@ const CameraBox = ({ camera }) => {
     >
       {/* Video Area */}
       <div className="relative aspect-video bg-slate-950">
-        {camera.kamera_tipi === 'WEBCAM' ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-            data-testid="camera-video-element"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-500">
+        {/* Backend MJPEG stream */}
+        <img
+          src={`${API}/stream/${camera.id}`}
+          alt={camera.kamera_adi}
+          className="w-full h-full object-cover"
+          data-testid="camera-video-element"
+          onError={(e) => {
+            console.error('Stream yüklenemedi:', camera.id);
+            setIsOnline(false);
+            e.target.style.display = 'none';
+          }}
+          onLoad={() => {
+            setIsOnline(true);
+          }}
+        />
+        {!isOnline && (
+          <div className="absolute inset-0 flex items-center justify-center text-slate-500">
             <div className="text-center">
               <Camera className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">RTSP Stream</p>
-              <p className="text-xs mt-1 text-slate-600">WebRTC entegrasyonu gerekiyor</p>
+              <p className="text-sm">Kamera Offline</p>
+              <p className="text-xs mt-1 text-slate-600">{camera.kamera_tipi}</p>
             </div>
           </div>
         )}
