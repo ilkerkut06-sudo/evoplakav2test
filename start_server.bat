@@ -24,6 +24,14 @@ start "Backend Server" cmd /k "cd /d %~dp0backend && call venv\Scripts\activate.
 
 timeout /t 3 >nul
 
+echo Checking Frontend dependencies...
+if not exist "frontend\node_modules\.bin\craco.cmd" (
+    echo [ERROR] craco not found! Running setup first...
+    echo Please run setup_and_start.bat instead.
+    pause
+    exit /b 1
+)
+
 echo Starting Frontend on port 3000...
 start "Frontend Server" cmd /k "cd /d %~dp0frontend && set PORT=3000 && yarn start"
 
