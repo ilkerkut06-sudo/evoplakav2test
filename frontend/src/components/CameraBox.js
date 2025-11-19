@@ -14,21 +14,130 @@ const CameraBox = ({ camera }) => {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
 
+  const wsRef = useRef(null);
+  const intervalRef = useRef(null);
+
   useEffect(() => {
-    // Backend MJPEG stream kullan
-    checkCameraStatus();
+    if (camera.kamera_tipi === 'WEBCAM') {
+      startWebRTC();
+    } else {
+      // RTSP için backend stream kullan
+      setIsOnline(true);
+    }
+    
     return () => {
-      // Cleanup
+      stopWebRTC();
     };
   }, [camera]);
 
-  const checkCameraStatus = async () => {
+  const startWebRTC = async () => {
     try {
-      const response = await axios.get(`${API}/cameras/${camera.id}/stream`, { timeout: 3000 });
+      // WebRTC: Browser'dan webcam aç
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      
+      let constraints = { video: { width: 640, height: 480 } };
+      
+      if (camera.webcam_index !== undefined && videoDevices[camera.webcam_index]) {
+        constraints = {
+          video: {
+            deviceId: { exact: videoDevices[camera.webcam_index].deviceId },
+            width: 640,
+            height: 480
+          }
+        };
+      }
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+      }
+      
+      // WebSocket bağlantısı (YOLO/OCR için)
+      connectWebSocket();
+      
       setIsOnline(true);
     } catch (error) {
-      console.error('Kamera durumu kontrol edilemedi:', error);
+      console.error('WebRTC başlatılamadı:', error);
       setIsOnline(false);
+    }
+  };
+
+  const connectWebSocket = () => {
+    const wsUrl = `ws://localhost:8001/api/stream/ws/${camera.id}`;
+    wsRef.current = new WebSocket(wsUrl);
+    
+    wsRef.current.onopen = () => {
+      console.log('WebSocket bağlantısı kuruldu');
+      // Frame göndermeye başla
+      startFrameSending();
+    };
+    
+    wsRef.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      // Backend'den gelen plaka tanıma sonuçlarını işle
+      if (data.type === 'detection') {
+        console.log('Plaka tespit edildi:', data);
+      }
+    };
+    
+    wsRef.current.onerror = (error) => {
+      console.error('WebSocket hatası:', error);
+    };
+    
+    wsRef.current.onclose = () => {
+      console.log('WebSocket bağlantısı kesildi');
+      stopFrameSending();
+    };
+  };
+
+  const startFrameSending = () => {
+    // Her 100ms'de bir frame gönder (10 FPS)
+    intervalRef.current = setInterval(() => {
+      sendFrameToBackend();
+    }, 100);
+  };
+
+  const stopFrameSending = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const sendFrameToBackend = () => {
+    if (!videoRef.current || !canvasRef.current || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      return;
+    }
+    
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    canvas.width = 640;
+    canvas.height = 480;
+    
+    context.drawImage(videoRef.current, 0, 0, 640, 480);
+    
+    canvas.toBlob((blob) => {
+      if (blob && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        blob.arrayBuffer().then(buffer => {
+          wsRef.current.send(buffer);
+        });
+      }
+    }, 'image/jpeg', 0.8);
+  };
+
+  const stopWebRTC = () => {
+    stopFrameSending();
+    
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
     }
   };
 
