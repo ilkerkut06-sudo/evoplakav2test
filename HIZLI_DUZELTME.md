@@ -144,4 +144,30 @@ Compiled successfully!
 
 ---
 
+## 🔴 Offline Installer: craco eksik
+
+### Sebep
+Offline installer oluşturulurken node_modules eksik kalmış
+
+### ⚡ Hızlı Çözüm
+
+**İnternet bağlantılı makinede:**
+```batch
+cd frontend
+rmdir /s /q node_modules
+yarn install
+cd ..
+create_offline_installer.bat
+```
+
+Script otomatik craco kontrolü yapacak.
+
+### ✅ Test
+```batch
+# Offline installer içinde kontrol:
+dir offline_installer\frontend_packages\node_modules.zip
+```
+
+---
+
 **Hala sorun mu var?** GitHub'dan en son versiyonu indirip temiz kurulum yapın.
