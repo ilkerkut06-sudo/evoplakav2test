@@ -210,6 +210,22 @@ yarn start
 
 ---
 
+### Hata: "craco not found"
+**Sebep:** Offline installer oluşturulurken eksik paket kalmış
+**Çözüm:** 
+1. İnternet bağlantılı makinede `create_offline_installer.bat` tekrar çalıştırın
+2. Script otomatik olarak craco kontrolü yapacak
+3. `frontend_packages\node_modules.zip` içinde `node_modules\.bin\craco.cmd` olmalı
+4. Eğer tekrar eksik kalırsa, manuel kontrol:
+   ```
+   cd frontend
+   rmdir /s /q node_modules
+   yarn install
+   # Sonra create_offline_installer.bat tekrar çalıştır
+   ```
+
+---
+
 ### Hata: "MongoDB connection error"
 **Sebep:** MongoDB servisi çalışmıyor
 **Çözüm:** 
