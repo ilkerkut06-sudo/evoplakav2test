@@ -82,3 +82,57 @@ async def control_ptz(camera_id: str, action: str):
         "camera_id": camera_id,
         "action": action
     }
+
+@router.get("/{camera_id}/stream")
+async def get_camera_stream(camera_id: str):
+    """Kamera stream'ini test et (webcam için)"""
+    import cv2
+    
+    camera = await db.cameras.find_one({"id": camera_id}, {"_id": 0})
+    if not camera:
+        raise HTTPException(status_code=404, detail="Kamera bulunamadı")
+    
+    # Webcam ise OpenCV ile test et
+    if camera.get('tip') == 'webcam':
+        webcam_index = camera.get('webcam_index', 0)
+        
+        try:
+            cap = cv2.VideoCapture(webcam_index)
+            
+            if not cap.isOpened():
+                return {
+                    "status": "error",
+                    "message": f"Webcam {webcam_index} açılamadı",
+                    "webcam_index": webcam_index
+                }
+            
+            # Bir frame oku
+            ret, frame = cap.read()
+            cap.release()
+            
+            if ret:
+                return {
+                    "status": "success",
+                    "message": f"Webcam {webcam_index} çalışıyor",
+                    "webcam_index": webcam_index,
+                    "resolution": f"{frame.shape[1]}x{frame.shape[0]}"
+                }
+            else:
+                return {
+                    "status": "error",
+                    "message": f"Webcam {webcam_index} frame okunamadı",
+                    "webcam_index": webcam_index
+                }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Webcam hatası: {str(e)}",
+                "webcam_index": webcam_index
+            }
+    else:
+        # IP kamera için RTSP kontrolü
+        return {
+            "status": "info",
+            "message": "IP kamera stream kontrolü henüz implement edilmedi",
+            "camera_type": camera.get('tip')
+        }
