@@ -69,8 +69,9 @@ async def video_stream(camera_id: str):
             # Kamerayı aç
             if camera_type == 'WEBCAM':
                 webcam_index = camera.get('webcam_index', 0)
-                cap = cv2.VideoCapture(webcam_index)
-                logger.info(f"MJPEG Stream: Webcam {webcam_index} açıldı")
+                # Windows için CAP_DSHOW backend kullan (daha stabil)
+                cap = cv2.VideoCapture(webcam_index, cv2.CAP_DSHOW)
+                logger.info(f"MJPEG Stream: Webcam {webcam_index} açıldı (CAP_DSHOW)")
             elif camera_type == 'RTSP':
                 rtsp_url = camera.get('main_stream_url')
                 if not rtsp_url:
