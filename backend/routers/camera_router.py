@@ -85,15 +85,17 @@ async def control_ptz(camera_id: str, action: str):
 
 @router.get("/{camera_id}/stream")
 async def get_camera_stream(camera_id: str):
-    """Kamera stream'ini test et (webcam için)"""
+    """Kamera stream'ini test et"""
     import cv2
     
     camera = await db.cameras.find_one({"id": camera_id}, {"_id": 0})
     if not camera:
         raise HTTPException(status_code=404, detail="Kamera bulunamadı")
     
+    camera_type = camera.get('kamera_tipi', '').upper()
+    
     # Webcam ise OpenCV ile test et
-    if camera.get('tip') == 'webcam':
+    if camera_type == 'WEBCAM':
         webcam_index = camera.get('webcam_index', 0)
         
         try:
@@ -102,8 +104,9 @@ async def get_camera_stream(camera_id: str):
             if not cap.isOpened():
                 return {
                     "status": "error",
-                    "message": f"Webcam {webcam_index} açılamadı",
-                    "webcam_index": webcam_index
+                    "message": f"Webcam {webcam_index} açılamadı. Başka uygulama kullanıyor olabilir.",
+                    "webcam_index": webcam_index,
+                    "camera_type": camera_type
                 }
             
             # Bir frame oku
@@ -113,26 +116,81 @@ async def get_camera_stream(camera_id: str):
             if ret:
                 return {
                     "status": "success",
-                    "message": f"Webcam {webcam_index} çalışıyor",
+                    "message": f"Webcam {webcam_index} çalışıyor!",
                     "webcam_index": webcam_index,
-                    "resolution": f"{frame.shape[1]}x{frame.shape[0]}"
+                    "resolution": f"{frame.shape[1]}x{frame.shape[0]}",
+                    "camera_type": camera_type
                 }
             else:
                 return {
                     "status": "error",
                     "message": f"Webcam {webcam_index} frame okunamadı",
-                    "webcam_index": webcam_index
+                    "webcam_index": webcam_index,
+                    "camera_type": camera_type
                 }
         except Exception as e:
             return {
                 "status": "error",
                 "message": f"Webcam hatası: {str(e)}",
-                "webcam_index": webcam_index
+                "webcam_index": webcam_index,
+                "camera_type": camera_type,
+                "error_detail": str(e)
             }
+    
+    # RTSP IP kamera ise
+    elif camera_type == 'RTSP':
+        rtsp_url = camera.get('main_stream_url')
+        
+        if not rtsp_url:
+            return {
+                "status": "error",
+                "message": "RTSP URL tanımlanmamış",
+                "camera_type": camera_type
+            }
+        
+        try:
+            cap = cv2.VideoCapture(rtsp_url)
+            
+            if not cap.isOpened():
+                return {
+                    "status": "error",
+                    "message": f"RTSP stream açılamadı: {rtsp_url}",
+                    "camera_type": camera_type,
+                    "rtsp_url": rtsp_url
+                }
+            
+            # Bir frame oku
+            ret, frame = cap.read()
+            cap.release()
+            
+            if ret:
+                return {
+                    "status": "success",
+                    "message": f"RTSP stream çalışıyor!",
+                    "resolution": f"{frame.shape[1]}x{frame.shape[0]}",
+                    "camera_type": camera_type,
+                    "rtsp_url": rtsp_url
+                }
+            else:
+                return {
+                    "status": "error",
+                    "message": f"RTSP stream frame okunamadı",
+                    "camera_type": camera_type,
+                    "rtsp_url": rtsp_url
+                }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"RTSP hatası: {str(e)}",
+                "camera_type": camera_type,
+                "rtsp_url": rtsp_url,
+                "error_detail": str(e)
+            }
+    
     else:
-        # IP kamera için RTSP kontrolü
         return {
-            "status": "info",
-            "message": "IP kamera stream kontrolü henüz implement edilmedi",
-            "camera_type": camera.get('tip')
+            "status": "error",
+            "message": f"Bilinmeyen kamera tipi: {camera_type}",
+            "camera_type": camera_type,
+            "supported_types": ["WEBCAM", "RTSP"]
         }
