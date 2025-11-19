@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import base64
 from datetime import datetime, timezone
+from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
