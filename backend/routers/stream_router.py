@@ -52,9 +52,10 @@ manager = ConnectionManager()
 async def websocket_endpoint(websocket: WebSocket, camera_id: str):
     """
     WebSocket endpoint for camera streaming
-    Client sends video frames, server processes and broadcasts
+    Backend reads from camera and sends frames to client
     """
     await manager.connect(websocket, camera_id)
+    cap = None
     
     try:
         # Kamera bilgisini al
@@ -63,27 +64,69 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: str):
             await websocket.send_json({"error": "Kamera bulunamadı"})
             return
         
+        camera_type = camera.get('kamera_tipi', '').upper()
+        
+        # Kamerayı aç
+        if camera_type == 'WEBCAM':
+            webcam_index = camera.get('webcam_index', 0)
+            cap = cv2.VideoCapture(webcam_index)
+            logger.info(f"Webcam {webcam_index} açıldı")
+        elif camera_type == 'RTSP':
+            rtsp_url = camera.get('main_stream_url')
+            if not rtsp_url:
+                await websocket.send_json({"error": "RTSP URL tanımlanmamış"})
+                return
+            cap = cv2.VideoCapture(rtsp_url)
+            logger.info(f"RTSP stream açıldı: {rtsp_url}")
+        else:
+            await websocket.send_json({"error": f"Desteklenmeyen kamera tipi: {camera_type}"})
+            return
+        
+        if not cap or not cap.isOpened():
+            await websocket.send_json({"error": "Kamera açılamadı"})
+            return
+        
+        # Frame gönderme döngüsü
         while True:
-            # Client'tan frame al
-            data = await websocket.receive_text()
-            message = json.loads(data)
+            ret, frame = cap.read()
             
-            if message.get("type") == "frame":
-                # Frame'i işle ve broadcast et
-                await manager.broadcast(camera_id, {
-                    "type": "frame",
-                    "data": message.get("data"),
-                    "timestamp": datetime.now(timezone.utc).isoformat()
-                })
+            if not ret:
+                logger.warning(f"Frame okunamadı: {camera_id}")
+                await asyncio.sleep(0.1)
+                continue
             
-            elif message.get("type") == "ping":
-                await websocket.send_json({"type": "pong"})
+            # Frame'i küçült (performans için)
+            frame = cv2.resize(frame, (640, 480))
+            
+            # JPEG encode
+            ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            if not ret:
+                continue
+            
+            # Base64 encode
+            frame_base64 = base64.b64encode(buffer).decode('utf-8')
+            
+            # WebSocket'e gönder
+            await websocket.send_json({
+                "type": "frame",
+                "data": f"data:image/jpeg;base64,{frame_base64}",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "camera_id": camera_id
+            })
+            
+            # FPS kontrolü (25 FPS)
+            await asyncio.sleep(0.04)
     
     except WebSocketDisconnect:
+        logger.info(f"WebSocket bağlantısı kesildi: {camera_id}")
         manager.disconnect(websocket, camera_id)
     except Exception as e:
         logger.error(f"WebSocket hatası: {e}")
         manager.disconnect(websocket, camera_id)
+    finally:
+        if cap:
+            cap.release()
+            logger.info(f"Kamera kapatıldı: {camera_id}")
 
 @router.post("/rtsp/start/{camera_id}")
 async def start_rtsp_stream(camera_id: str):
