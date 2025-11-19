@@ -121,6 +121,14 @@ if exist "%~dp0offline_installer\frontend_packages\node_modules.zip" (
     )
     
     echo Frontend paketleri basariyla yuklendi.
+    
+    REM Craco kontrolu
+    if not exist "node_modules\.bin\craco.cmd" (
+        echo [WARNING] craco bulunamadi offline paketlerde!
+        echo Bu sorun olabilir. Lutfen internet baglantisi ile yeniden kurun.
+    ) else (
+        echo [OK] craco mevcut ve hazir
+    )
 ) else (
     echo [ERROR] node_modules.zip bulunamadi!
     pause
