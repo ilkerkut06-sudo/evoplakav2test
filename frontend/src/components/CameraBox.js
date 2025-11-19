@@ -199,21 +199,31 @@ const CameraBox = ({ camera }) => {
     >
       {/* Video Area */}
       <div className="relative aspect-video bg-slate-950">
-        {/* Backend MJPEG stream */}
-        <img
-          src={`${API}/stream/${camera.id}`}
-          alt={camera.kamera_adi}
-          className="w-full h-full object-cover"
-          data-testid="camera-video-element"
-          onError={(e) => {
-            console.error('Stream yüklenemedi:', camera.id);
-            setIsOnline(false);
-            e.target.style.display = 'none';
-          }}
-          onLoad={() => {
-            setIsOnline(true);
-          }}
-        />
+        {camera.kamera_tipi === 'WEBCAM' ? (
+          /* WebRTC: Client-side webcam */
+          <>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              data-testid="camera-video-element"
+            />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+          </>
+        ) : (
+          /* RTSP: Backend MJPEG stream */
+          <img
+            src={`${API}/stream/${camera.id}`}
+            alt={camera.kamera_adi}
+            className="w-full h-full object-cover"
+            data-testid="camera-video-element"
+            onError={() => setIsOnline(false)}
+            onLoad={() => setIsOnline(true)}
+          />
+        )}
+        
         {!isOnline && (
           <div className="absolute inset-0 flex items-center justify-center text-slate-500">
             <div className="text-center">
