@@ -55,9 +55,14 @@ async def get_system_status():
     system_status = monitor.get_system_status()
     
     return {
-        "ocr": ocr_status,
-        "yolo": yolo_status,
-        "vehicle_classifier": classifier_status,
+        "ocr": {
+            "engine": settings_data.get('ocr_motor', 'easyocr'),
+            "status": "ready"
+        },
+        "yolo": {
+            "confidence": settings_data.get('yolo_confidence', 0.5),
+            "status": "ready"
+        },
         "system": system_status,
         "ai_correction": {
             "enabled": settings_data.get('ai_duzeltme_aktif', True)
