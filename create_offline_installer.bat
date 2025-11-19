@@ -44,6 +44,12 @@ REM Frontend paketlerini indir
 echo [3/6] Frontend paketleri indiriliyor...
 cd /d "%~dp0frontend"
 
+REM Temiz kurulum yap (eksik paket sorununu onlemek icin)
+if exist "node_modules" (
+    echo Mevcut node_modules temizleniyor...
+    rmdir /s /q node_modules
+)
+
 REM Yarn varsa yarn kullan
 where yarn >nul 2>&1
 if errorlevel 1 (
@@ -58,6 +64,23 @@ if errorlevel 1 (
     echo [ERROR] Frontend paketleri indirilemedi!
     pause
     exit /b 1
+)
+
+REM Craco kontrolu
+if not exist "node_modules\.bin\craco.cmd" (
+    echo [WARNING] craco bulunamadi! Tekrar yukleniyor...
+    where yarn >nul 2>&1
+    if errorlevel 1 (
+        npm install --legacy-peer-deps
+    ) else (
+        yarn install
+    )
+)
+
+if exist "node_modules\.bin\craco.cmd" (
+    echo [OK] craco basariyla yuklendi
+) else (
+    echo [ERROR] craco yuklenemedi! Devam ediliyor...
 )
 
 echo Frontend paketleri yuklendi: frontend\node_modules\
