@@ -75,10 +75,10 @@ async def get_system_status():
         "vehicle_classifier": classifier_status,
         "system": system_status,
         "ai_correction": {
-            "enabled": settings.ai_duzeltme_aktif
+            "enabled": settings_data.get('ai_duzeltme_aktif', True)
         },
         "night_mode": {
-            "enabled": settings.gece_modu_aktif,
-            "schedule": f"{settings.gece_modu_baslangic} - {settings.gece_modu_bitis}"
+            "enabled": settings_data.get('gece_modu_aktif', False),
+            "schedule": f"{settings_data.get('gece_modu_baslangic', '20:00')} - {settings_data.get('gece_modu_bitis', '06:00')}"
         }
     }
