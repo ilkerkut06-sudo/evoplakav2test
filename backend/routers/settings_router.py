@@ -49,14 +49,16 @@ async def get_system_status():
     from services.system_monitor import SystemMonitor
     
     # Ayarları al
-    settings = await get_settings()
+    settings_data = await db.settings.find_one({"id": "sistem_ayarlari"}, {"_id": 0})
+    if not settings_data:
+        settings_data = {"ocr_motor": "easyocr", "yolo_confidence": 0.5}
     
     # OCR motor durumu
-    ocr_service = OCRService(engine=settings.ocr_motor)
+    ocr_service = OCRService(engine=settings_data.get('ocr_motor', 'easyocr'))
     ocr_status = ocr_service.get_status()
     
     # YOLO durumu
-    detector = PlateDetector(confidence=settings.yolo_confidence)
+    detector = PlateDetector(confidence=settings_data.get('yolo_confidence', 0.5))
     yolo_status = detector.get_status()
     
     # Araç sınıflandırıcı durumu
