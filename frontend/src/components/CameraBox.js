@@ -15,49 +15,20 @@ const CameraBox = ({ camera }) => {
   const streamRef = useRef(null);
 
   useEffect(() => {
-    if (camera.kamera_tipi === 'WEBCAM') {
-      startWebcam();
-    }
+    // Backend MJPEG stream kullan
+    checkCameraStatus();
     return () => {
-      stopWebcam();
+      // Cleanup
     };
   }, [camera]);
 
-  const startWebcam = async () => {
+  const checkCameraStatus = async () => {
     try {
-      // Belirli bir webcam index kullan (camera.webcam_index)
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      
-      let constraints = { video: { width: 640, height: 480 } };
-      
-      // Eğer webcam_index belirtilmişse ve o index'te cihaz varsa kullan
-      if (camera.webcam_index !== undefined && videoDevices[camera.webcam_index]) {
-        constraints = {
-          video: {
-            deviceId: { exact: videoDevices[camera.webcam_index].deviceId },
-            width: 640,
-            height: 480
-          }
-        };
-      }
-      
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-      }
+      const response = await axios.get(`${API}/cameras/${camera.id}/stream`, { timeout: 3000 });
       setIsOnline(true);
     } catch (error) {
-      console.error('Webcam başlatılamadı:', error);
+      console.error('Kamera durumu kontrol edilemedi:', error);
       setIsOnline(false);
-    }
-  };
-
-  const stopWebcam = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
     }
   };
 
