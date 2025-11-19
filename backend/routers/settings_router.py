@@ -42,10 +42,7 @@ async def update_settings(settings_input: SistemAyarlariUpdate):
 
 @router.get("/system-status")
 async def get_system_status():
-    """Sistem motorlarının durumunu kontrol et"""
-    from services.ocr_service import OCRService
-    from services.plate_detection import PlateDetector
-    from services.vehicle_classifier import VehicleClassifier
+    """Sistem motorlarının durumunu kontrol et (lightweight - modelleri yüklemeden)"""
     from services.system_monitor import SystemMonitor
     
     # Ayarları al
@@ -53,19 +50,7 @@ async def get_system_status():
     if not settings_data:
         settings_data = {"ocr_motor": "easyocr", "yolo_confidence": 0.5}
     
-    # OCR motor durumu
-    ocr_service = OCRService(engine=settings_data.get('ocr_motor', 'easyocr'))
-    ocr_status = ocr_service.get_status()
-    
-    # YOLO durumu
-    detector = PlateDetector(confidence=settings_data.get('yolo_confidence', 0.5))
-    yolo_status = detector.get_status()
-    
-    # Araç sınıflandırıcı durumu
-    classifier = VehicleClassifier()
-    classifier_status = classifier.get_status()
-    
-    # Sistem kaynak kullanımı
+    # Sadece sistem kaynak kullanımı (ağır modelleri yüklemeyin!)
     monitor = SystemMonitor()
     system_status = monitor.get_system_status()
     
